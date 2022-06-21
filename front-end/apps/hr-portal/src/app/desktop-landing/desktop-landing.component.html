@@ -1,0 +1,29 @@
+<nhs-back-link [params]="backlink"></nhs-back-link>
+
+<h1>Manage passports</h1>
+<ul class="nhsuk-grid-row nhsuk-card-group nhsuk-u-padding-top-0" style="margin-bottom:20px;">
+    <div class="nhsuk-grid-column-one-half">
+        <li class="beta-hub-main-topic nhsuk-card-group__item">
+            <nhs-card (clicked)="onIssueInformationToPassportsClicked()" [params]="issueInformation"></nhs-card>
+        </li>
+    </div>
+    <div class="nhsuk-grid-column-one-half">
+        <li class="beta-hub-main-topic nhsuk-card-group__item">
+            <nhs-card (clicked)="onSharedPassportsClicked()" [params]="acceptSharedPassports"></nhs-card>
+        </li>
+    </div>
+</ul>
+<hr class="nhsuk-section-break nhsuk-section-break--m nhsuk-section-break--visible">
+<ul class="nhsuk-grid-row nhsuk-card-group nhsuk-u-padding-top-0" style="margin-bottom:20px;">
+    <div class="nhsuk-grid-column-one-half">
+        <li class="beta-hub-main-topic nhsuk-card-group__item">
+            <!-- <nhs-card [params]="issueInformation"></nhs-card> -->
+        </li>
+    </div>
+    <div class="nhsuk-grid-column-one-half">
+        <li class="beta-hub-main-topic nhsuk-card-group__item">
+            <nhs-card (clicked)="onIssueDigitalStaffPassportsClicked()" [params]="issueDigitalStaffPassports">
+            </nhs-card>
+        </li>
+    </div>
+</ul>

@@ -1,0 +1,74 @@
+<h1 class="nhsuk-u-margin-top-4">
+    Check your details and share your passport
+</h1>
+<dl class="nhsuk-summary-list">
+    <div class="nhsuk-summary-list__row">
+        <dt class="nhsuk-summary-list__key">
+            Choose the NHS organisation you would like to share your passport with
+        </dt>
+        <dd class="nhsuk-summary-list__value">
+            {{selectedOrganisation?.name}}
+        </dd>
+
+        <dd class="nhsuk-summary-list__actions">
+
+            <a href="#" (click)="onchangeOrganisation()">
+                Change<span class="nhsuk-u-visually-hidden"> organisation</span>
+            </a>
+
+        </dd>
+    </div>
+    <div class="nhsuk-summary-list__row">
+        <dt class="nhsuk-summary-list__key">
+            What is your date of birth?
+        </dt>
+        <dd class="nhsuk-summary-list__value">
+            {{dob | date:'d MMM y'}}
+        </dd>
+
+        <dd class="nhsuk-summary-list__actions">
+
+            <a href="#" (click)="onChangeDob()">
+                Change<span class="nhsuk-u-visually-hidden"> date of birth</span>
+            </a>
+
+        </dd>
+    </div>
+    <div class="nhsuk-summary-list__row">
+        <dt class="nhsuk-summary-list__key">
+            Select the information you want to share with the organisation
+        </dt>
+        <dd class="nhsuk-summary-list__value">
+            <div *ngFor="let credential of typeOfSharedInformation">
+                {{credential.friendlyName}}
+            </div>
+        </dd>
+
+        <dd class="nhsuk-summary-list__actions">
+
+            <a href="#" (click)="onChangeSharedInformation()">
+                Change<span class="nhsuk-u-visually-hidden"> shared information</span>
+            </a>
+
+        </dd>
+    </div>
+    <div class="nhsuk-summary-list__row">
+        <dt class="nhsuk-summary-list__key">
+            Send a message with your information? (optional)
+        </dt>
+        <dd class="nhsuk-summary-list__value">
+            {{message}}
+        </dd>
+
+        <dd class="nhsuk-summary-list__actions">
+
+            <a href="#" (click)="onChangeMessage()">
+                Change<span class="nhsuk-u-visually-hidden"> shared information</span>
+            </a>
+
+        </dd>
+    </div>
+</dl>
+<button class="nhsuk-button nhsuk-u-margin-top-4" [disabled]="busy" (click)="done()" draggable="false">
+    Share your passport
+</button>

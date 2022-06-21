@@ -1,0 +1,24 @@
+<div class="nhsuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1">
+    <h2 class="nhsuk-error-summary__title" id="error-summary-title">
+         {{title}}
+    </h2>
+    <div class="nhsuk-error-summary__body">
+      <p>
+        {{params?.descriptionText}}
+      </p>
+
+      <ul class="nhsuk-list nhsuk-error-summary__list">
+        <li *ngFor="let error of params?.errorList" >
+          <a href="{{error.href}}">
+            <span *ngIf="error?.html">
+                {{error?.html}}
+              </span>
+              <span *ngIf="error?.text">
+                {{error?.text}}
+              </span>
+          </a>
+        </li>
+      </ul>
+
+    </div>
+  </div>

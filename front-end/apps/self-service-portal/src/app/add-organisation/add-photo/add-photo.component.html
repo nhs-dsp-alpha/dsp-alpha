@@ -1,0 +1,25 @@
+<ng-container *ngIf="!photoAdded else added">
+    <nhs-back-link [params]="cancelLink"></nhs-back-link>
+    <h1 class="nhsuk-heading-l">
+        <span class="nhsuk-caption-l">Add an NHS organisation</span>
+        Add a photo
+    </h1>
+
+    <p class="nhsuk-body">
+        Before you add an NHS organisation, you will need to add a photo to your passport. The organisation will use it
+        to verify your identity.
+    </p>
+
+    <a class="nhsuk-button nhsuk-u-margin-top-4" (click)="onPhotoAdded()" draggable="false">
+        Add photo
+    </a>
+    &nbsp;
+    <a class="nhsuk-button nhsuk-u-margin-top-4" (click)="onSkipPhoto()" draggable="false">
+        Skip
+    </a>
+</ng-container>
+
+<ng-template #added>
+    <self-service-profile-picture-flow [heading]="heading" (cancel)="notAdded()" (continue)="done($event)">
+    </self-service-profile-picture-flow>
+</ng-template>

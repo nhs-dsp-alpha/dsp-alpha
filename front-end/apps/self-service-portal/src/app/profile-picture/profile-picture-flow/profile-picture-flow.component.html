@@ -1,0 +1,20 @@
+<nhs-back-link [params]="backlink" (clicked)="goBack()" *ngIf="displayImageChoice"></nhs-back-link>
+<ng-container *ngTemplateOutlet="displayChoice">
+</ng-container>
+
+<ng-template #displayChoice>
+    <self-service-photo-upload-select *ngIf="displayImageChoice else displayWebcam"
+        (continue)="photoUploadSelectContinue($event)" [heading]="heading">
+    </self-service-photo-upload-select>
+</ng-template>
+
+<ng-template #displayWebcam>
+    <self-service-camera *ngIf="!imageUrl else displayImage" [heading]="heading" (continue)="handleWebcamImage($event)"
+        (cancel)="displayImageChoice = true">
+    </self-service-camera>
+</ng-template>
+
+<ng-template #displayImage>
+    <self-service-photo-display [heading]="heading" [imageUrl]="imageUrl" (continue)="uploadImage($event)"
+        (cancel)="removeImage()"></self-service-photo-display>
+</ng-template>

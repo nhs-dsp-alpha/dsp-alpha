@@ -1,0 +1,15 @@
+﻿{
+    "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
+    "settings": {
+        "documentationRules": {
+            "companyName": "SiteKit Health Solutions",
+            "copyrightText": "Copyright (c) Sitekit Applications. All rights reserved.",
+            "documentInterfaces": false,
+            "documentExposedElements": false,
+            "documentInternalElements": false
+        },
+        "layoutRules": {
+            "newlineAtEndOfFile": "omit"
+        }
+    }
+}

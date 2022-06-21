@@ -1,0 +1,1 @@
+export * as service from './passport-list-dummy.service';

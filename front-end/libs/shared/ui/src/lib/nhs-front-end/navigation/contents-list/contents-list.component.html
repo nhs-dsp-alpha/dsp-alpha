@@ -1,0 +1,16 @@
+<nav class="nhsuk-contents-list {{ params.classes }}" role="navigation" aria-label="Pages in this guide">
+    <!-- {%- for attribute, value in params.attributes %} {{attribute}}="{{value}}"{% endfor %} -->
+    <h2 class="nhsuk-u-visually-hidden">Contents</h2>
+    <ol class="nhsuk-contents-list__list">
+        <ng-container *ngFor="let item of params.items">
+            <li *ngIf="item.current; else notCurrent" class="nhsuk-contents-list__item" aria-current="page">
+                <span class="nhsuk-contents-list__current">{{ item.text }}</span>
+            </li>
+            <ng-template #notCurrent>
+                <li class="nhsuk-contents-list__item">
+                    <a class="nhsuk-contents-list__link" href="{{ item.href }}">{{ item.text }}</a>
+                </li>
+            </ng-template>
+        </ng-container>
+    </ol>
+</nav>

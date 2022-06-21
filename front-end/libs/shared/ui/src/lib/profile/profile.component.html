@@ -1,0 +1,9 @@
+<h1 class="nhsuk-heading-xl">{{welcome}}</h1>
+<div *ngIf="!isAuthenticated" class="container">
+    <p><button class="nhsuk-button" (click)="login()">Login</button></p>
+    <!-- <p *ngIf="isAuthenticated"><button class="nhsuk-button" (click)="logout()">Logout</button></p>
+    <p *ngIf="isAuthenticated"><button class="nhsuk-button" (click)="profile()">Profile</button></p>
+    <p *ngIf="isAuthenticated"><button class="nhsuk-button" (click)="password()">Password</button></p>
+    <br /> -->
+</div>
+<front-end-profile-summary (photoChange)="onPhotoChange()" (emailChange)="onEmailChange()" (nameChange)="onNameChange()" *ngIf="isAuthenticated" [user]="profile"></front-end-profile-summary>

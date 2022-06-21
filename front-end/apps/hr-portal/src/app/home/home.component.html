@@ -1,0 +1,25 @@
+<ng-container *ngTemplateOutlet="signIn">
+</ng-container>
+<ng-template #signIn>
+    <h1 *ngIf="!isAuthenticated" class="nhsuk-heading-xl">Welcome to Digital Staff Passport</h1>
+    <a *ngIf="!isAuthenticated else chooseOrg" class="nhsuk-button nhsuk-u-margin-top-4" (click)="onLoginClicked()"
+        draggable="false">
+        Login
+    </a>
+</ng-template>
+<ng-template #chooseOrg>
+    <hr-portal-select-organisation *ngIf="!organisationSelected" [organisations$]="organisations$"
+        (organisationSelected)="onOrganisationIdSelected($event)" (cancel)="onSelectOrganisationBack()">
+    </hr-portal-select-organisation>
+</ng-template>
+
+
+
+<!-- <front-end-sign-in></front-end-sign-in>
+<front-end-issue-verify></front-end-issue-verify>
+
+<front-end-profile></front-end-profile>
+<front-end-organisation-connections></front-end-organisation-connections>
+<front-end-profile-completion></front-end-profile-completion>
+<front-end-select-wallet></front-end-select-wallet>
+<front-end-passport-activity></front-end-passport-activity> -->

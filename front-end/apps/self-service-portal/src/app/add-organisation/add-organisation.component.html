@@ -1,0 +1,39 @@
+<div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+        <ng-container *ngTemplateOutlet="addPhoto">
+        </ng-container>
+    </div>
+</div>
+
+<ng-template #addPhoto>
+    <self-service-add-photo *ngIf="!photoAdded else findOrganisation" (continue)="onPhotoAdded($event)">
+    </self-service-add-photo>
+</ng-template>
+
+<ng-template #findOrganisation>
+    <self-service-find-organisation *ngIf="!organisationsFound else selectOrganisation" (cancel)="photoAdded = false"
+        (continue)="onOrganisationsFound($event)"></self-service-find-organisation>
+</ng-template>
+
+<ng-template #selectOrganisation>
+    <self-service-select-organisation *ngIf="!organisationSelected else addEmployeeId" [organisations$]="organisations$"
+        (cancel)="organisationsFound = false" (organisationSelected)="onOrganisationCodeSelected($event)"
+        (continue)="onOrganisationSelected($event)"></self-service-select-organisation>
+</ng-template>
+
+<ng-template #addEmployeeId>
+    <self-service-add-empid *ngIf="!employeeIdAdded else addDateOfBirth" [employeeId]="employeeId"
+        (cancel)="organisationSelected = false" (continue)="onEmployeeIdAdded($event)"></self-service-add-empid>
+</ng-template>
+
+<ng-template #addDateOfBirth>
+    <self-service-add-dob *ngIf="!dateOfBirthAdded else summary" [dob]="dob" (cancel)="employeeIdAdded = false"
+        (continue)="onDateOfBirthAdded($event)"></self-service-add-dob>
+</ng-template>
+
+<ng-template #summary>
+    <self-service-add-organisation-form (continue)="onSummaryContinue($event)" [busy]="busy" [photoString]="photoString"
+        [selectedOrganisation]="selectedOrganisation" [employeeId]="employeeId" [dob]="dob"
+        (changePhoto)="onChangePhoto()" (changeOrganisation)="onChangeOrganisation()"
+        (changeEmployeeId)="onChangeEmployeeId()" (changeDob)="onChangeDob()"></self-service-add-organisation-form>
+</ng-template>

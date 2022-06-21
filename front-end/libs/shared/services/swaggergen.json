@@ -1,0 +1,12 @@
+{
+  "lang": "typescript-angular",
+  "spec": {},
+  "type": "CLIENT",
+  "codegenVersion": "V3",
+  "options": {
+    "supportsES6": "true",
+    "withInterfaces": "true",
+    "providedInRoot": "true",
+    "ngVersion": "12.0.0"
+  }
+}

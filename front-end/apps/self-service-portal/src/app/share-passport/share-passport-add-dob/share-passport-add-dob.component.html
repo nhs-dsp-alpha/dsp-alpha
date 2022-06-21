@@ -1,0 +1,8 @@
+<nhs-back-link [params]="backlink" (clicked)="goBack()"></nhs-back-link>
+
+<h1 class="nhsuk-heading-l">
+    <span class="nhsuk-caption-l">Share your passport</span>
+    What is your date of birth
+</h1>
+
+<front-end-add-dob [dob]="dob" (continue)="done($event)"></front-end-add-dob>

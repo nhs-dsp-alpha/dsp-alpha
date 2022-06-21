@@ -1,0 +1,7 @@
+<input type="file" class="file-input" accept="image/*" (change)="onFileSelected($event)" #fileUpload>
+
+<div class="file-upload">
+    <a class="nhsuk-button nhsuk-u-margin-top-4" (click)="fileUpload.click()" draggable="false">
+        Upload photo
+    </a>
+</div>

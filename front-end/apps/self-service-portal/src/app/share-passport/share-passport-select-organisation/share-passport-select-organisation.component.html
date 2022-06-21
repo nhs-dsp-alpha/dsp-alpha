@@ -1,0 +1,10 @@
+<nhs-back-link [params]="backlink" (clicked)="goBack()"></nhs-back-link>
+<h1 class="nhsuk-heading-l">
+    <span class="nhsuk-caption-l">Share your passport</span>
+    Choose the NHS organisation you would like to share your passport with
+</h1>
+
+
+<front-end-select-organisation [organisations$]="organisations$"
+    (organisationSelected)="onOrganisationSelected($event)">
+</front-end-select-organisation>

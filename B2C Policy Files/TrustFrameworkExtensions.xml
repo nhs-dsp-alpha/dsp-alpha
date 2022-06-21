@@ -1,0 +1,316 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" 
+  PolicySchemaVersion="0.3.0.0" 
+  TenantId="SSPDevOrgB2C.onmicrosoft.com" 
+  PolicyId="B2C_1A_TrustFrameworkExtensions" 
+  PublicPolicyUri="http://SSPDevOrgB2C.onmicrosoft.com/B2C_1A_TrustFrameworkExtensions">
+  
+  <BasePolicy>
+    <TenantId>SSPDevOrgB2C.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_TrustFrameworkLocalization</PolicyId>
+  </BasePolicy>
+  <BuildingBlocks>
+    <ClaimsSchema>
+      <!-- Claim that stores the access token of the identity provider -->
+      <ClaimType Id="identityProviderAccessToken">
+        <DisplayName>Identity Provider Access Token</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>Stores the access token of the identity provider.</AdminHelpText>
+      </ClaimType>
+      <!-- Claim that stores the refresh token of the identity provider -->
+      <ClaimType Id="identityProviderRefreshToken">
+        <DisplayName>Identity Provider Refresh Token</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>Stores the refresh token of the identity provider.</AdminHelpText>
+      </ClaimType>
+      <ClaimType Id="title">
+        <DisplayName>Title</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Your title.</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="idassurancelevel">
+        <DisplayName>Id Assurance Level</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Your Id Assurance Level.</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="nhsid_useruid">
+        <DisplayName>NHS User ID</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+      <ClaimType Id="nrbacRoles">
+        <DisplayName>User Roles</DisplayName>
+        <DataType>stringCollection</DataType>
+      </ClaimType>
+      <ClaimType Id="userOrgs">
+        <DisplayName>User Organisations</DisplayName>
+        <DataType>stringCollection</DataType>
+      </ClaimType>
+		<ClaimType Id="userRole">
+			<DisplayName>User Role</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userRole1">
+			<DisplayName>User Role</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userRole2">
+			<DisplayName>User Role</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userRole3">
+			<DisplayName>User Role</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userRole4">
+			<DisplayName>User Role</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userRole5">
+			<DisplayName>User Role</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userRole6">
+			<DisplayName>User Role</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userRole7">
+			<DisplayName>User Role</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userRole8">
+			<DisplayName>User Role</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userRole9">
+			<DisplayName>User Role</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userRole10">
+			<DisplayName>User Role</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userOrg1">
+			<DisplayName>User Org</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userOrg2">
+			<DisplayName>User Org</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userOrg3">
+			<DisplayName>User Org</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userOrg4">
+			<DisplayName>User Org</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userOrg5">
+			<DisplayName>User Org</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userOrg6">
+			<DisplayName>User Org</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userOrg7">
+			<DisplayName>User Org</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userOrg8">
+			<DisplayName>User Org</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userOrg9">
+			<DisplayName>User Org</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userOrg10">
+			<DisplayName>User Org</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+		<ClaimType Id="userRoles">
+			<DisplayName>User Roles</DisplayName>
+			<DataType>string</DataType>
+		</ClaimType>
+	</ClaimsSchema>
+
+	  <ClaimsTransformations>
+		  <ClaimsTransformation Id="CreateUserRoles" TransformationMethod="GenerateJson">
+			  <InputClaims>
+				  <InputClaim ClaimTypeReferenceId="userOrg1" TransformationClaimType="0.org" />
+				  <InputClaim ClaimTypeReferenceId="userOrg2" TransformationClaimType="1.org" />
+				  <InputClaim ClaimTypeReferenceId="userOrg3" TransformationClaimType="2.org" />
+				  <InputClaim ClaimTypeReferenceId="userOrg4" TransformationClaimType="3.org" />
+				  <InputClaim ClaimTypeReferenceId="userOrg5" TransformationClaimType="4.org" />
+				  <InputClaim ClaimTypeReferenceId="userOrg6" TransformationClaimType="5.org" />
+				  <InputClaim ClaimTypeReferenceId="userOrg7" TransformationClaimType="6.org" />
+				  <InputClaim ClaimTypeReferenceId="userOrg8" TransformationClaimType="7.org" />
+				  <InputClaim ClaimTypeReferenceId="userOrg9" TransformationClaimType="8.org" />
+				  <InputClaim ClaimTypeReferenceId="userOrg10" TransformationClaimType="9.org" />
+				  <InputClaim ClaimTypeReferenceId="userRole1" TransformationClaimType="0.role" />
+				  <InputClaim ClaimTypeReferenceId="userRole2" TransformationClaimType="1.role" />
+				  <InputClaim ClaimTypeReferenceId="userRole3" TransformationClaimType="2.role" />
+				  <InputClaim ClaimTypeReferenceId="userRole4" TransformationClaimType="3.role" />
+				  <InputClaim ClaimTypeReferenceId="userRole5" TransformationClaimType="4.role" />
+				  <InputClaim ClaimTypeReferenceId="userRole6" TransformationClaimType="5.role" />
+				  <InputClaim ClaimTypeReferenceId="userRole7" TransformationClaimType="6.role" />
+				  <InputClaim ClaimTypeReferenceId="userRole8" TransformationClaimType="7.role" />
+				  <InputClaim ClaimTypeReferenceId="userRole9" TransformationClaimType="8.role" />
+				  <InputClaim ClaimTypeReferenceId="userRole10" TransformationClaimType="9.role" />
+			  </InputClaims>
+			  <OutputClaims>
+				  <OutputClaim ClaimTypeReferenceId="userRoles" TransformationClaimType="outputClaim"/>
+			  </OutputClaims>
+		  </ClaimsTransformation>		  
+	  </ClaimsTransformations>
+  </BuildingBlocks>
+
+  <ClaimsProviders>
+    <ClaimsProvider>
+      <Domain>api.service.nhs.uk</Domain>
+      <DisplayName>NHS Care Identity Service 2</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="NHS-CIS2-OAuth2">
+          <DisplayName>NHS CIS2 OAuth2</DisplayName>
+          <Protocol Name="OAuth2" />
+          <OutputTokenFormat>JWT</OutputTokenFormat>
+          <Metadata>
+            <Item Key="AccessTokenEndpoint">https://int.api.service.nhs.uk/oauth2-mock/token</Item>
+            <Item Key="authorization_endpoint">https://int.api.service.nhs.uk/oauth2-mock/authorize</Item>
+            <Item Key="ClaimsEndpoint">https://int.api.service.nhs.uk/oauth2-mock/userinfo</Item>
+            <Item Key="BearerTokenTransmissionMethod">AuthorizationHeader</Item>
+            <Item Key="response_types">code</Item>
+            <Item Key="response_mode">query</Item>
+            <Item Key="scope">openid profile api offline_access</Item>
+
+            <Item Key="UsePolicyInRedirectUri">0</Item>
+            <Item Key="client_id">C8RJvKa0arnpLxpQmGRI2CfpSVZqusXk</Item>
+
+            <Item Key="HttpBinding">POST</Item>
+            <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+            <Item Key="ResolveJsonPathsInJsonTokens">true</Item>
+            <Item Key="AccessTokenResponseFormat">json</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="client_secret" StorageReferenceId="B2C_1A_NHSCIS2" />
+          </CryptographicKeys>
+			<!--<InputClaims>
+				<InputClaim ClaimTypeReferenceId="userRole" PartnerClaimType="nhsid_nrbac_roles[0].role_code" />
+			</InputClaims>-->			
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="issuerUserId" PartnerClaimType="sub" />
+            <OutputClaim ClaimTypeReferenceId="surname" />
+            <OutputClaim ClaimTypeReferenceId="givenName" />
+            <OutputClaim ClaimTypeReferenceId="title" />
+            <OutputClaim ClaimTypeReferenceId="displayName" PartnerClaimType="display_name" />
+            <OutputClaim ClaimTypeReferenceId="email" />
+            <OutputClaim ClaimTypeReferenceId="idassurancelevel" />
+            <OutputClaim ClaimTypeReferenceId="nhsid_useruid" />
+            <OutputClaim ClaimTypeReferenceId="nrbacRoles" PartnerClaimType="nhsid_nrbac_roles" />
+            <OutputClaim ClaimTypeReferenceId="userOrgs" PartnerClaimType="nhsid_user_orgs" />
+			<OutputClaim ClaimTypeReferenceId="userOrg1" PartnerClaimType="nhsid_nrbac_roles[0].org_code" />
+			<OutputClaim ClaimTypeReferenceId="userOrg2" PartnerClaimType="nhsid_nrbac_roles[1].org_code" />
+			<OutputClaim ClaimTypeReferenceId="userOrg3" PartnerClaimType="nhsid_nrbac_roles[2].org_code" />
+			<OutputClaim ClaimTypeReferenceId="userOrg4" PartnerClaimType="nhsid_nrbac_roles[3].org_code" />
+			<OutputClaim ClaimTypeReferenceId="userOrg5" PartnerClaimType="nhsid_nrbac_roles[4].org_code" />
+			<OutputClaim ClaimTypeReferenceId="userOrg6" PartnerClaimType="nhsid_nrbac_roles[5].org_code" />
+			<OutputClaim ClaimTypeReferenceId="userOrg7" PartnerClaimType="nhsid_nrbac_roles[6].org_code" />
+			<OutputClaim ClaimTypeReferenceId="userOrg8" PartnerClaimType="nhsid_nrbac_roles[7].org_code" />
+			<OutputClaim ClaimTypeReferenceId="userOrg9" PartnerClaimType="nhsid_nrbac_roles[8].org_code" />
+			<OutputClaim ClaimTypeReferenceId="userOrg10" PartnerClaimType="nhsid_nrbac_roles[9].org_code" />
+			<OutputClaim ClaimTypeReferenceId="userRole1" PartnerClaimType="nhsid_nrbac_roles[0].role_code" />
+			<OutputClaim ClaimTypeReferenceId="userRole2" PartnerClaimType="nhsid_nrbac_roles[1].role_code" />
+			<OutputClaim ClaimTypeReferenceId="userRole3" PartnerClaimType="nhsid_nrbac_roles[2].role_code" />
+			<OutputClaim ClaimTypeReferenceId="userRole4" PartnerClaimType="nhsid_nrbac_roles[3].role_code" />
+			<OutputClaim ClaimTypeReferenceId="userRole5" PartnerClaimType="nhsid_nrbac_roles[4].role_code" />
+			<OutputClaim ClaimTypeReferenceId="userRole6" PartnerClaimType="nhsid_nrbac_roles[5].role_code" />
+			<OutputClaim ClaimTypeReferenceId="userRole7" PartnerClaimType="nhsid_nrbac_roles[6].role_code" />
+			<OutputClaim ClaimTypeReferenceId="userRole8" PartnerClaimType="nhsid_nrbac_roles[7].role_code" />
+			<OutputClaim ClaimTypeReferenceId="userRole9" PartnerClaimType="nhsid_nrbac_roles[8].role_code" />
+			<OutputClaim ClaimTypeReferenceId="userRole10" PartnerClaimType="nhsid_nrbac_roles[9].role_code" />
+            <OutputClaim ClaimTypeReferenceId="identityProvider" DefaultValue="NHS-CIS2" PartnerClaimType="iss" />
+            <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="socialIdpAuthentication" AlwaysUseDefaultValue="true" />
+
+            <OutputClaim ClaimTypeReferenceId="identityProviderAccessToken" PartnerClaimType="{oauth2:access_token}" />
+            <OutputClaim ClaimTypeReferenceId="identityProviderRefreshToken" PartnerClaimType="{oauth2:refresh_token}"/>
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="CreateUserRoles" />
+            <OutputClaimsTransformation ReferenceId="CreateRandomUPNUserName" />
+            <OutputClaimsTransformation ReferenceId="CreateUserPrincipalName" />
+            <OutputClaimsTransformation ReferenceId="CreateAlternativeSecurityId" />
+            <OutputClaimsTransformation ReferenceId="CreateSubjectClaimFromAlternativeSecurityId" />
+          </OutputClaimsTransformations>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-SocialLogin" />
+        </TechnicalProfile>
+
+      </TechnicalProfiles>
+    </ClaimsProvider>
+  </ClaimsProviders>
+
+  <UserJourneys>
+    <UserJourney Id="SignUpOrSignInWithNHSCIS2">
+      <OrchestrationSteps>
+
+        <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsignin">
+          <ClaimsProviderSelections>
+            <ClaimsProviderSelection TargetClaimsExchangeId="NHSCIS2Exchange" />
+          </ClaimsProviderSelections>
+        </OrchestrationStep>
+
+        <!-- Check if the user has selected to sign in using one of the social providers -->
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="NHSCIS2Exchange" TechnicalProfileReferenceId="NHS-CIS2-OAuth2" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- For social IDP authentication, attempt to find the user account in the directory. -->
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadUsingAlternativeSecurityId" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId-NoError" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- Show self-asserted page only if the directory does not have the user account already (i.e. we do not have an objectId). 
+            This can only happen when authentication happened using a social IDP. If local account was created or authentication done
+            using ESTS in step 2, then an user account must exist in the directory by this time. -->
+        <!-- <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="SelfAsserted-Social" TechnicalProfileReferenceId="SelfAsserted-Social" />
+          </ClaimsExchanges>
+        </OrchestrationStep> -->
+
+        <!-- The previous step (SelfAsserted-Social) could have been skipped if there were no attributes to collect 
+              from the user. So, in that case, create the user in the directory if one does not already exist 
+              (verified using objectId which would be set from the last step if account was created in the directory. -->
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserWrite" TechnicalProfileReferenceId="AAD-UserWriteUsingAlternativeSecurityId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="5" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+
+      </OrchestrationSteps>
+      <ClientDefinition ReferenceId="DefaultWeb" />
+    </UserJourney>
+  </UserJourneys>
+
+</TrustFrameworkPolicy>

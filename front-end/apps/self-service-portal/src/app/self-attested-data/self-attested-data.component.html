@@ -1,0 +1,14 @@
+<div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+        <ng-container *ngTemplateOutlet="addEmergencyContact">
+        </ng-container>
+    </div>
+</div>
+<ng-template #addEmergencyContact>
+    <self-service-add-emergency-contact-details (continue)="onEmergencyContactDetailsAdded()"
+        *ngIf="!dataAdded else dataConfirm">
+    </self-service-add-emergency-contact-details>
+</ng-template>
+<ng-template #dataConfirm>
+    <self-service-self-attested-data-added></self-service-self-attested-data-added>
+</ng-template>

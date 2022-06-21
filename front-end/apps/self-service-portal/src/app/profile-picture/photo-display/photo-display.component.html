@@ -1,0 +1,10 @@
+<nhs-back-link [params]="backlink" (clicked)="goBack()"></nhs-back-link>
+<h1 class="nhsuk-heading-l">
+    <span class="nhsuk-caption-l">{{heading}}</span>
+    Confirm you are happy with your profile photo or click back to start again.
+</h1>
+<a class="nhsuk-button nhsuk-u-margin-top-4" (click)="confirmPhoto()" draggable="false">
+    Continue
+</a>
+<br />
+<img [src]="imageUrl" />

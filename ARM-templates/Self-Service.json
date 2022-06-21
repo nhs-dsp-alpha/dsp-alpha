@@ -1,0 +1,2564 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {
+      "type": "string",
+      "defaultValue": "Dev"
+    },
+    "B2C_clientId": {
+      "type": "string"
+    },
+    "B2C_clientSecret": {
+      "type": "SecureString"
+    }
+  },
+  "variables": {
+    "vnetName": "[concat('SSP', parameters('environment') ,'SsVnet')]",
+    "serverFarmName": "[concat('SSP', parameters('environment') ,'SsAsp')]",
+    "appConfigurationName": "[concat('SSP', parameters('environment') ,'SsAcfg')]",
+    "databaseServerName": "[concat('SSP', parameters('environment') ,'SsAss')]",
+    "apiManagement": "[concat('SSP', parameters('environment') ,'SsApiManager')]",
+    "storageName": "[toLower(concat('SSP', parameters('environment') ,'SsStrUser'))]",
+    "apps": {
+      "audit": "[concat('SSP', parameters('environment') ,'SsApiAudit')]",
+      "SsPortal": "[concat('SSP', parameters('environment') ,'SsWppSelfServicePortal')]",
+      "HrPortal1": "[concat('SSP', parameters('environment') ,'SsWppHrPortalOrg1')]",
+      "HrPortal2": "[concat('SSP', parameters('environment') ,'SsWppHrPortalOrg2')]",
+      "organisations": "[concat('SSP', parameters('environment') ,'SsWppOrganisations')]",
+      "MsGraph": "[concat('SSP', parameters('environment') ,'SsApiMsGraph')]",
+      "issuer": "[concat('SSP', parameters('environment') ,'SsWppIssuer')]",
+      "PostOfficeIssuer": "[concat('SSP', parameters('environment') ,'SsWppPostOfficeIssuer')]",
+      "IssuingOrg2": "[concat('SSP', parameters('environment') ,'SsWppIssuingOrg2')]",
+      "container": "[concat('SSP', parameters('environment') ,'SsApiContainer')]"
+    },
+    "insightsName": "[concat('SSP', parameters('environment') ,'Insights')]"
+  },
+  "resources": [
+    // {
+    //   "type": "Microsoft.AzureActiveDirectory/b2cDirectories",
+    //   "apiVersion": "2021-04-01",
+    //   "name": "[concat('SSP', parameters('environment') ,'SSB2C.onmicrosoft.com')]",
+    //   "location": "europe",
+    //   "sku": {
+    //     "name": "PremiumP1",
+    //     "tier": "A0"
+    //   },
+    //   "properties": {}
+    // },
+
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2020-11-01",
+      "name": "[variables('vnetName')]",
+      "location": "uksouth",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.2.0.0/16"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "default",
+            "properties": {
+              "addressPrefix": "10.2.0.0/24",
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+          }
+        ],
+        "virtualNetworkPeerings": [],
+        "enableDdosProtection": false
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "apiVersion": "2020-11-01",
+      "name": "[concat(variables('vnetName'), '/default')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ],
+      "properties": {
+        "addressPrefix": "10.2.0.0/24",
+        "delegations": [],
+        "privateEndpointNetworkPolicies": "Enabled",
+        "privateLinkServiceNetworkPolicies": "Enabled"
+      }
+    },
+
+
+    {
+      "type": "Microsoft.AppConfiguration/configurationStores",
+      "apiVersion": "2021-10-01-preview",
+      "name": "[variables('appConfigurationName')]",
+      "location": "uksouth",
+      "sku": {
+        "name": "standard"
+      },
+      "properties": {
+        "disableLocalAuth": true,
+        "softDeleteRetentionInDays": 7,
+        "enablePurgeProtection": true,
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2021-12-01-preview",
+      "name": "[concat('SSP', parameters('environment') ,'Workspaces')]",
+      "location": "uksouth",
+      "properties": {
+        "sku": {
+          "name": "pergb2018"
+        },
+        "retentionInDays": 30,
+        "features": {
+          "enableLogAccessUsingOnlyResourcePermissions": true
+        },
+        "workspaceCapping": {
+          "dailyQuotaGb": -1
+        },
+        "publicNetworkAccessForIngestion": "Enabled",
+        "publicNetworkAccessForQuery": "Enabled"
+      }
+    },
+    {
+      "type": "microsoft.insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[variables('insightsName')]",
+      "location": "uksouth",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web",
+        "Flow_Type": "Redfield",
+        "Request_Source": "IbizaAIExtension",
+        "RetentionInDays": 90,
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', concat('SSP', parameters('environment') ,'Workspaces'))]",
+        "IngestionMode": "LogAnalytics",
+        "publicNetworkAccessForIngestion": "Enabled",
+        "publicNetworkAccessForQuery": "Enabled"
+      }
+    },
+
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2021-03-01",
+      "name": "[variables('serverFarmName')]",
+      "location": "UK South",
+      "sku": {
+        "name": "D1",
+        "tier": "Shared",
+        "size": "D1",
+        "family": "D",
+        "capacity": 0
+      },
+      "kind": "app",
+      "properties": {
+        "perSiteScaling": false,
+        "elasticScaleEnabled": false,
+        "maximumElasticWorkerCount": 1,
+        "isSpot": false,
+        "reserved": false,
+        "isXenon": false,
+        "hyperV": false,
+        "targetWorkerCount": 0,
+        "targetWorkerSizeId": 0,
+        "zoneRedundant": false
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2021-03-01",
+      "name": "[variables('apps').issuer]",
+      "location": "UK South",
+      "dependsOn": [
+        "[variables('serverFarmName')]"
+      ],
+      "tags": {},
+      "kind": "app",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverFarmName'))]",
+        "reserved": false,
+        "isXenon": false,
+        "hyperV": false,
+        "siteConfig": {
+          "numberOfWorkers": 1,
+          "acrUseManagedIdentityCreds": false,
+          "alwaysOn": false,
+          "http20Enabled": false,
+          "functionAppScaleLimit": 0,
+          "minimumElasticInstanceCount": 0
+        },
+        "scmSiteAlsoStopped": false,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "clientCertMode": "Required",
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "httpsOnly": true,
+        "redundancyMode": "None",
+        "storageAccountRequired": false,
+        "keyVaultReferenceIdentity": "SystemAssigned"
+      },
+      "resources": [
+        {
+          "type": "config",
+          "apiVersion": "2021-03-01",
+          "name": "web",
+          "location": "UK South",
+          "dependsOn": [
+            "[variables('appConfigurationName')]",
+            "[variables('apps').issuer]"
+          ],
+          "tags": {},
+          "properties": {
+            "appSettings": [
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference(variables('insightsName')).InstrumentationKey]",
+                "slotSetting": false
+              },
+              {
+                "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                "value": "[reference(variables('insightsName')).ConnectionString]",
+                "slotSetting": false
+              },
+              {
+                "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+                "value": "~3",
+                "slotSetting": false
+              },
+              {
+                "name": "XDT_MicrosoftApplicationInsights_Mode",
+                "value": "Recommended",
+                "slotSetting": false
+              }
+            ],
+            "connectionStrings": [
+              {
+                "name": "AppConfig",
+                "connectionString": "[reference(variables('appConfigurationName')).endpoint]",
+                "type": "Custom",
+                "slotSetting": false
+              }
+            ],
+            "numberOfWorkers": 1,
+            "defaultDocuments": [
+              "Default.htm",
+              "Default.html",
+              "Default.asp",
+              "index.htm",
+              "index.html",
+              "iisstart.htm",
+              "default.aspx",
+              "index.php",
+              "hostingstart.html"
+            ],
+            "netFrameworkVersion": "v6.0",
+            "requestTracingEnabled": false,
+            "remoteDebuggingEnabled": false,
+            "remoteDebuggingVersion": "VS2019",
+            "httpLoggingEnabled": false,
+            "acrUseManagedIdentityCreds": false,
+            "logsDirectorySizeLimit": 35,
+            "detailedErrorLoggingEnabled": false,
+            "scmType": "VSTSRM",
+            "use32BitWorkerProcess": true,
+            "webSocketsEnabled": false,
+            "alwaysOn": false,
+            "managedPipelineMode": "Integrated",
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot",
+                "preloadEnabled": false
+              }
+            ],
+            "loadBalancing": "LeastRequests",
+            "experiments": {
+              "rampUpRules": []
+            },
+            "autoHealEnabled": false,
+            "vnetRouteAllEnabled": false,
+            "vnetPrivatePortsCount": 0,
+            "localMySqlEnabled": false,
+            "ipSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictionsUseMain": false,
+            "http20Enabled": true,
+            "minTlsVersion": "1.2",
+            "scmMinTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "preWarmedInstanceCount": 0,
+            "functionAppScaleLimit": 0,
+            "functionsRuntimeScaleMonitoringEnabled": false,
+            "minimumElasticInstanceCount": 0,
+            "azureStorageAccounts": {}
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2021-03-01",
+      "name": "[variables('apps').PostOfficeIssuer]",
+      "location": "UK South",
+      "dependsOn": [
+        "[variables('serverFarmName')]"
+      ],
+      "tags": {},
+      "kind": "app",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverFarmName'))]",
+        "reserved": false,
+        "isXenon": false,
+        "hyperV": false,
+        "siteConfig": {
+          "numberOfWorkers": 1,
+          "acrUseManagedIdentityCreds": false,
+          "alwaysOn": false,
+          "http20Enabled": false,
+          "functionAppScaleLimit": 0,
+          "minimumElasticInstanceCount": 0
+        },
+        "scmSiteAlsoStopped": false,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "clientCertMode": "Required",
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "httpsOnly": true,
+        "redundancyMode": "None",
+        "storageAccountRequired": false,
+        "keyVaultReferenceIdentity": "SystemAssigned"
+      },
+      "resources": [
+        {
+          "type": "config",
+          "apiVersion": "2021-03-01",
+          "name": "web",
+          "location": "UK South",
+          "dependsOn": [
+            "[variables('appConfigurationName')]",
+            "[variables('apps').PostOfficeIssuer]"
+          ],
+          "tags": {},
+          "properties": {
+            "appSettings": [
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference(variables('insightsName')).InstrumentationKey]",
+                "slotSetting": false
+              },
+              {
+                "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                "value": "[reference(variables('insightsName')).ConnectionString]",
+                "slotSetting": false
+              },
+              {
+                "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+                "value": "~3",
+                "slotSetting": false
+              },
+              {
+                "name": "XDT_MicrosoftApplicationInsights_Mode",
+                "value": "Recommended",
+                "slotSetting": false
+              }
+            ],
+            "connectionStrings": [
+              {
+                "name": "AppConfig",
+                "connectionString": "[reference(variables('appConfigurationName')).endpoint]",
+                "type": "Custom",
+                "slotSetting": false
+              }
+            ],
+            "numberOfWorkers": 1,
+            "defaultDocuments": [
+              "Default.htm",
+              "Default.html",
+              "Default.asp",
+              "index.htm",
+              "index.html",
+              "iisstart.htm",
+              "default.aspx",
+              "index.php",
+              "hostingstart.html"
+            ],
+            "netFrameworkVersion": "v6.0",
+            "requestTracingEnabled": false,
+            "remoteDebuggingEnabled": false,
+            "remoteDebuggingVersion": "VS2019",
+            "httpLoggingEnabled": false,
+            "acrUseManagedIdentityCreds": false,
+            "logsDirectorySizeLimit": 35,
+            "detailedErrorLoggingEnabled": false,
+            "scmType": "VSTSRM",
+            "use32BitWorkerProcess": true,
+            "webSocketsEnabled": false,
+            "alwaysOn": false,
+            "managedPipelineMode": "Integrated",
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot",
+                "preloadEnabled": false
+              }
+            ],
+            "loadBalancing": "LeastRequests",
+            "experiments": {
+              "rampUpRules": []
+            },
+            "autoHealEnabled": false,
+            "vnetRouteAllEnabled": false,
+            "vnetPrivatePortsCount": 0,
+            "localMySqlEnabled": false,
+            "ipSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictionsUseMain": false,
+            "http20Enabled": true,
+            "minTlsVersion": "1.2",
+            "scmMinTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "preWarmedInstanceCount": 0,
+            "functionAppScaleLimit": 0,
+            "functionsRuntimeScaleMonitoringEnabled": false,
+            "minimumElasticInstanceCount": 0,
+            "azureStorageAccounts": {}
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2021-03-01",
+      "name": "[variables('apps').organisations]",
+      "location": "UK South",
+      "dependsOn": [
+        "[variables('serverFarmName')]"
+      ],
+      "tags": {},
+      "kind": "app",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverFarmName'))]",
+        "reserved": false,
+        "isXenon": false,
+        "hyperV": false,
+        "siteConfig": {
+          "numberOfWorkers": 1,
+          "acrUseManagedIdentityCreds": false,
+          "alwaysOn": false,
+          "http20Enabled": false,
+          "functionAppScaleLimit": 0,
+          "minimumElasticInstanceCount": 0
+        },
+        "scmSiteAlsoStopped": false,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "clientCertMode": "Required",
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "httpsOnly": true,
+        "redundancyMode": "None",
+        "storageAccountRequired": false,
+        "keyVaultReferenceIdentity": "SystemAssigned"
+      },
+      "resources": [
+        {
+          "type": "config",
+          "apiVersion": "2021-03-01",
+          "name": "web",
+          "location": "UK South",
+          "dependsOn": [
+            "[variables('appConfigurationName')]",
+            "[variables('apps').organisations]"
+          ],
+          "tags": {},
+          "properties": {
+            "appSettings": [
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference(variables('insightsName')).InstrumentationKey]",
+                "slotSetting": false
+              },
+              {
+                "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                "value": "[reference(variables('insightsName')).ConnectionString]",
+                "slotSetting": false
+              },
+              {
+                "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+                "value": "~3",
+                "slotSetting": false
+              },
+              {
+                "name": "XDT_MicrosoftApplicationInsights_Mode",
+                "value": "Recommended",
+                "slotSetting": false
+              }
+            ],
+            "connectionStrings": [
+              {
+                "name": "AppConfig",
+                "connectionString": "[reference(variables('appConfigurationName')).endpoint]",
+                "type": "Custom",
+                "slotSetting": false
+              }
+            ],
+            "numberOfWorkers": 1,
+            "defaultDocuments": [
+              "Default.htm",
+              "Default.html",
+              "Default.asp",
+              "index.htm",
+              "index.html",
+              "iisstart.htm",
+              "default.aspx",
+              "index.php",
+              "hostingstart.html"
+            ],
+            "netFrameworkVersion": "v6.0",
+            "requestTracingEnabled": false,
+            "remoteDebuggingEnabled": false,
+            "remoteDebuggingVersion": "VS2019",
+            "httpLoggingEnabled": false,
+            "acrUseManagedIdentityCreds": false,
+            "logsDirectorySizeLimit": 35,
+            "detailedErrorLoggingEnabled": false,
+            "publishingUsername": "$ApiPostOfficeIssuerDev",
+            "scmType": "VSTSRM",
+            "use32BitWorkerProcess": true,
+            "webSocketsEnabled": false,
+            "alwaysOn": false,
+            "managedPipelineMode": "Integrated",
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot",
+                "preloadEnabled": false
+              }
+            ],
+            "loadBalancing": "LeastRequests",
+            "experiments": {
+              "rampUpRules": []
+            },
+            "autoHealEnabled": false,
+            "vnetRouteAllEnabled": false,
+            "vnetPrivatePortsCount": 0,
+            "localMySqlEnabled": false,
+            "ipSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictionsUseMain": false,
+            "http20Enabled": true,
+            "minTlsVersion": "1.2",
+            "scmMinTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "preWarmedInstanceCount": 0,
+            "functionAppScaleLimit": 0,
+            "functionsRuntimeScaleMonitoringEnabled": false,
+            "minimumElasticInstanceCount": 0,
+            "azureStorageAccounts": {}
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2021-03-01",
+      "name": "[variables('apps').HrPortal1]",
+      "location": "UK South",
+      "dependsOn": [
+        "[variables('serverFarmName')]"
+      ],
+      "tags": {},
+      "kind": "app",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverFarmName'))]",
+        "reserved": false,
+        "isXenon": false,
+        "hyperV": false,
+        "siteConfig": {
+          "numberOfWorkers": 1,
+          "acrUseManagedIdentityCreds": false,
+          "alwaysOn": false,
+          "http20Enabled": false,
+          "functionAppScaleLimit": 0,
+          "minimumElasticInstanceCount": 0
+        },
+        "scmSiteAlsoStopped": false,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "clientCertMode": "Required",
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "httpsOnly": true,
+        "redundancyMode": "None",
+        "storageAccountRequired": false,
+        "keyVaultReferenceIdentity": "SystemAssigned"
+      },
+      "resources": [
+        {
+          "type": "config",
+          "apiVersion": "2021-03-01",
+          "name": "web",
+          "location": "UK South",
+          "dependsOn": [
+            "[variables('appConfigurationName')]",
+            "[variables('apps').HrPortal1]"
+          ],
+          "tags": {},
+          "properties": {
+            "appSettings": [
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference(variables('insightsName')).InstrumentationKey]",
+                "slotSetting": false
+              },
+              {
+                "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                "value": "[reference(variables('insightsName')).ConnectionString]",
+                "slotSetting": false
+              },
+              {
+                "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+                "value": "~3",
+                "slotSetting": false
+              },
+              {
+                "name": "XDT_MicrosoftApplicationInsights_Mode",
+                "value": "Recommended",
+                "slotSetting": false
+              }
+            ],
+            "connectionStrings": [
+              {
+                "name": "AppConfig",
+                "connectionString": "[reference(variables('appConfigurationName')).endpoint]",
+                "type": "Custom",
+                "slotSetting": false
+              }
+            ],
+            "numberOfWorkers": 1,
+            "defaultDocuments": [
+              "Default.htm",
+              "Default.html",
+              "Default.asp",
+              "index.htm",
+              "index.html",
+              "iisstart.htm",
+              "default.aspx",
+              "index.php",
+              "hostingstart.html"
+            ],
+            "netFrameworkVersion": "v6.0",
+            "requestTracingEnabled": false,
+            "remoteDebuggingEnabled": false,
+            "remoteDebuggingVersion": "VS2019",
+            "httpLoggingEnabled": false,
+            "acrUseManagedIdentityCreds": false,
+            "logsDirectorySizeLimit": 35,
+            "detailedErrorLoggingEnabled": false,
+            "publishingUsername": "$ApiPostOfficeIssuerDev",
+            "scmType": "VSTSRM",
+            "use32BitWorkerProcess": true,
+            "webSocketsEnabled": false,
+            "alwaysOn": false,
+            "managedPipelineMode": "Integrated",
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot",
+                "preloadEnabled": false
+              }
+            ],
+            "loadBalancing": "LeastRequests",
+            "experiments": {
+              "rampUpRules": []
+            },
+            "autoHealEnabled": false,
+            "vnetRouteAllEnabled": false,
+            "vnetPrivatePortsCount": 0,
+            "localMySqlEnabled": false,
+            "ipSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictionsUseMain": false,
+            "http20Enabled": true,
+            "minTlsVersion": "1.2",
+            "scmMinTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "preWarmedInstanceCount": 0,
+            "functionAppScaleLimit": 0,
+            "functionsRuntimeScaleMonitoringEnabled": false,
+            "minimumElasticInstanceCount": 0,
+            "azureStorageAccounts": {}
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2021-03-01",
+      "name": "[variables('apps').HrPortal2]",
+      "location": "UK South",
+      "dependsOn": [
+        "[variables('serverFarmName')]"
+      ],
+      "tags": {},
+      "kind": "app",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverFarmName'))]",
+        "reserved": false,
+        "isXenon": false,
+        "hyperV": false,
+        "siteConfig": {
+          "numberOfWorkers": 1,
+          "acrUseManagedIdentityCreds": false,
+          "alwaysOn": false,
+          "http20Enabled": false,
+          "functionAppScaleLimit": 0,
+          "minimumElasticInstanceCount": 0
+        },
+        "scmSiteAlsoStopped": false,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "clientCertMode": "Required",
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "httpsOnly": true,
+        "redundancyMode": "None",
+        "storageAccountRequired": false,
+        "keyVaultReferenceIdentity": "SystemAssigned"
+      },
+      "resources": [
+        {
+          "type": "config",
+          "apiVersion": "2021-03-01",
+          "name": "web",
+          "location": "UK South",
+          "dependsOn": [
+            "[variables('appConfigurationName')]",
+            "[variables('apps').HrPortal2]"
+          ],
+          "tags": {},
+          "properties": {
+            "appSettings": [
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference(variables('insightsName')).InstrumentationKey]",
+                "slotSetting": false
+              },
+              {
+                "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                "value": "[reference(variables('insightsName')).ConnectionString]",
+                "slotSetting": false
+              },
+              {
+                "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+                "value": "~3",
+                "slotSetting": false
+              },
+              {
+                "name": "XDT_MicrosoftApplicationInsights_Mode",
+                "value": "Recommended",
+                "slotSetting": false
+              }
+            ],
+            "connectionStrings": [
+              {
+                "name": "AppConfig",
+                "connectionString": "[reference(variables('appConfigurationName')).endpoint]",
+                "type": "Custom",
+                "slotSetting": false
+              }
+            ],
+            "numberOfWorkers": 1,
+            "defaultDocuments": [
+              "Default.htm",
+              "Default.html",
+              "Default.asp",
+              "index.htm",
+              "index.html",
+              "iisstart.htm",
+              "default.aspx",
+              "index.php",
+              "hostingstart.html"
+            ],
+            "netFrameworkVersion": "v6.0",
+            "requestTracingEnabled": false,
+            "remoteDebuggingEnabled": false,
+            "remoteDebuggingVersion": "VS2019",
+            "httpLoggingEnabled": false,
+            "acrUseManagedIdentityCreds": false,
+            "logsDirectorySizeLimit": 35,
+            "detailedErrorLoggingEnabled": false,
+            "publishingUsername": "$ApiPostOfficeIssuerDev",
+            "scmType": "VSTSRM",
+            "use32BitWorkerProcess": true,
+            "webSocketsEnabled": false,
+            "alwaysOn": false,
+            "managedPipelineMode": "Integrated",
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot",
+                "preloadEnabled": false
+              }
+            ],
+            "loadBalancing": "LeastRequests",
+            "experiments": {
+              "rampUpRules": []
+            },
+            "autoHealEnabled": false,
+            "vnetRouteAllEnabled": false,
+            "vnetPrivatePortsCount": 0,
+            "localMySqlEnabled": false,
+            "ipSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictionsUseMain": false,
+            "http20Enabled": true,
+            "minTlsVersion": "1.2",
+            "scmMinTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "preWarmedInstanceCount": 0,
+            "functionAppScaleLimit": 0,
+            "functionsRuntimeScaleMonitoringEnabled": false,
+            "minimumElasticInstanceCount": 0,
+            "azureStorageAccounts": {}
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2021-03-01",
+      "name": "[variables('apps').SsPortal]",
+      "location": "UK South",
+      "dependsOn": [
+        "[variables('serverFarmName')]"
+      ],
+      "tags": {},
+      "kind": "app",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverFarmName'))]",
+        "reserved": false,
+        "isXenon": false,
+        "hyperV": false,
+        "siteConfig": {
+          "numberOfWorkers": 1,
+          "acrUseManagedIdentityCreds": false,
+          "alwaysOn": false,
+          "http20Enabled": false,
+          "functionAppScaleLimit": 0,
+          "minimumElasticInstanceCount": 0
+        },
+        "scmSiteAlsoStopped": false,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "clientCertMode": "Required",
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "httpsOnly": true,
+        "redundancyMode": "None",
+        "storageAccountRequired": false,
+        "keyVaultReferenceIdentity": "SystemAssigned"
+      },
+      "resources": [
+        {
+          "type": "config",
+          "apiVersion": "2021-03-01",
+          "name": "web",
+          "location": "UK South",
+          "dependsOn": [
+            "[variables('appConfigurationName')]",
+            "[variables('apps').SsPortal]"
+          ],
+          "tags": {},
+          "properties": {
+            "appSettings": [
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference(variables('insightsName')).InstrumentationKey]",
+                "slotSetting": false
+              },
+              {
+                "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                "value": "[reference(variables('insightsName')).ConnectionString]",
+                "slotSetting": false
+              },
+              {
+                "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+                "value": "~3",
+                "slotSetting": false
+              },
+              {
+                "name": "XDT_MicrosoftApplicationInsights_Mode",
+                "value": "Recommended",
+                "slotSetting": false
+              }
+            ],
+            "connectionStrings": [
+              {
+                "name": "AppConfig",
+                "connectionString": "[reference(variables('appConfigurationName')).endpoint]",
+                "type": "Custom",
+                "slotSetting": false
+              }
+            ],
+            "numberOfWorkers": 1,
+            "defaultDocuments": [
+              "Default.htm",
+              "Default.html",
+              "Default.asp",
+              "index.htm",
+              "index.html",
+              "iisstart.htm",
+              "default.aspx",
+              "index.php",
+              "hostingstart.html"
+            ],
+            "netFrameworkVersion": "v6.0",
+            "requestTracingEnabled": false,
+            "remoteDebuggingEnabled": false,
+            "remoteDebuggingVersion": "VS2019",
+            "httpLoggingEnabled": false,
+            "acrUseManagedIdentityCreds": false,
+            "logsDirectorySizeLimit": 35,
+            "detailedErrorLoggingEnabled": false,
+            "publishingUsername": "$ApiPostOfficeIssuerDev",
+            "scmType": "VSTSRM",
+            "use32BitWorkerProcess": true,
+            "webSocketsEnabled": false,
+            "alwaysOn": false,
+            "managedPipelineMode": "Integrated",
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot",
+                "preloadEnabled": false
+              }
+            ],
+            "loadBalancing": "LeastRequests",
+            "experiments": {
+              "rampUpRules": []
+            },
+            "autoHealEnabled": false,
+            "vnetRouteAllEnabled": false,
+            "vnetPrivatePortsCount": 0,
+            "localMySqlEnabled": false,
+            "ipSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictionsUseMain": false,
+            "http20Enabled": true,
+            "minTlsVersion": "1.2",
+            "scmMinTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "preWarmedInstanceCount": 0,
+            "functionAppScaleLimit": 0,
+            "functionsRuntimeScaleMonitoringEnabled": false,
+            "minimumElasticInstanceCount": 0,
+            "azureStorageAccounts": {}
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2021-03-01",
+      "name": "[variables('apps').audit]",
+      "location": "UK South",
+      "dependsOn": [
+        "[variables('serverFarmName')]"
+      ],
+      "kind": "api",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverFarmName'))]",
+        "reserved": false,
+        "isXenon": false,
+        "hyperV": false,
+        "siteConfig": {
+          "numberOfWorkers": 1,
+          "acrUseManagedIdentityCreds": false,
+          "alwaysOn": false,
+          "http20Enabled": true,
+          "functionAppScaleLimit": 0,
+          "minimumElasticInstanceCount": 0
+        },
+        "scmSiteAlsoStopped": false,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "clientCertMode": "Required",
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "httpsOnly": false,
+        "redundancyMode": "None",
+        "storageAccountRequired": false,
+        "keyVaultReferenceIdentity": "SystemAssigned"
+      },
+      "resources": [
+        {
+          "type": "config",
+          "apiVersion": "2021-03-01",
+          "name": "web",
+          "location": "UK South",
+          "dependsOn": [
+            "[variables('appConfigurationName')]",
+            "[variables('apps').audit]",
+            "[variables('databaseServerName')]"
+          ],
+          "tags": {},
+          "properties": {
+            "appSettings": [
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference(variables('insightsName')).InstrumentationKey]",
+                "slotSetting": false
+              },
+              {
+                "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                "value": "[reference(variables('insightsName')).ConnectionString]",
+                "slotSetting": false
+              },
+              {
+                "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+                "value": "~3",
+                "slotSetting": false
+              },
+              {
+                "name": "XDT_MicrosoftApplicationInsights_Mode",
+                "value": "Recommended",
+                "slotSetting": false
+              }
+            ],
+            "connectionStrings": [
+              {
+                "name": "AppConfig",
+                "connectionString": "[reference(variables('appConfigurationName')).endpoint]",
+                "type": "Custom",
+                "slotSetting": false
+              },
+              {
+                "name": "AuditDatabase",
+                "connectionString": "[concat('Server=tcp:', reference(variables('databaseServerName')).fullyQualifiedDomainName, ';Authentication=Active Directory Default; Database=', 'SSP', parameters('environment') ,'SsAudit', ';')]",
+                "type": "SQLServer",
+                "slotSetting": false
+              }
+            ],
+            "numberOfWorkers": 1,
+            "defaultDocuments": [
+              "Default.htm",
+              "Default.html",
+              "Default.asp",
+              "index.htm",
+              "index.html",
+              "iisstart.htm",
+              "default.aspx",
+              "index.php",
+              "hostingstart.html"
+            ],
+            "netFrameworkVersion": "v6.0",
+            "requestTracingEnabled": false,
+            "remoteDebuggingEnabled": false,
+            "remoteDebuggingVersion": "VS2019",
+            "httpLoggingEnabled": false,
+            "acrUseManagedIdentityCreds": false,
+            "logsDirectorySizeLimit": 35,
+            "detailedErrorLoggingEnabled": true,
+            "scmType": "VSTSRM",
+            "use32BitWorkerProcess": true,
+            "webSocketsEnabled": false,
+            "alwaysOn": false,
+            "managedPipelineMode": "Integrated",
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot",
+                "preloadEnabled": false
+              }
+            ],
+            "loadBalancing": "LeastRequests",
+            "experiments": {
+              "rampUpRules": []
+            },
+            "autoHealEnabled": false,
+            "vnetRouteAllEnabled": false,
+            "vnetPrivatePortsCount": 0,
+            "localMySqlEnabled": false,
+            "ipSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictionsUseMain": false,
+            "http20Enabled": true,
+            "minTlsVersion": "1.2",
+            "scmMinTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "preWarmedInstanceCount": 0,
+            "functionAppScaleLimit": 0,
+            "functionsRuntimeScaleMonitoringEnabled": false,
+            "minimumElasticInstanceCount": 0,
+            "azureStorageAccounts": {}
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2021-03-01",
+      "name": "[variables('apps').MsGraph]",
+      "location": "UK South",
+      "dependsOn": [
+        "[variables('serverFarmName')]"
+      ],
+      "kind": "api",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverFarmName'))]",
+        "reserved": false,
+        "isXenon": false,
+        "hyperV": false,
+        "siteConfig": {
+          "numberOfWorkers": 1,
+          "acrUseManagedIdentityCreds": false,
+          "alwaysOn": false,
+          "http20Enabled": true,
+          "functionAppScaleLimit": 0,
+          "minimumElasticInstanceCount": 0
+        },
+        "scmSiteAlsoStopped": false,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "clientCertMode": "Required",
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "httpsOnly": false,
+        "redundancyMode": "None",
+        "storageAccountRequired": false,
+        "keyVaultReferenceIdentity": "SystemAssigned"
+      },
+      "resources": [
+        {
+          "type": "config",
+          "apiVersion": "2021-03-01",
+          "name": "web",
+          "location": "UK South",
+          "dependsOn": [
+            "[variables('appConfigurationName')]",
+            "[variables('apps').MsGraph]"
+          ],
+          "tags": {},
+          "properties": {
+            "appSettings": [
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference(variables('insightsName')).InstrumentationKey]",
+                "slotSetting": false
+              },
+              {
+                "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                "value": "[reference(variables('insightsName')).ConnectionString]",
+                "slotSetting": false
+              },
+              {
+                "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+                "value": "~3",
+                "slotSetting": false
+              },
+              {
+                "name": "XDT_MicrosoftApplicationInsights_Mode",
+                "value": "Recommended",
+                "slotSetting": false
+              }
+            ],
+            "connectionStrings": [
+              {
+                "name": "AppConfig",
+                "connectionString": "[reference(variables('appConfigurationName')).endpoint]",
+                "type": "Custom",
+                "slotSetting": false
+              }
+            ],
+            "numberOfWorkers": 1,
+            "defaultDocuments": [
+              "Default.htm",
+              "Default.html",
+              "Default.asp",
+              "index.htm",
+              "index.html",
+              "iisstart.htm",
+              "default.aspx",
+              "index.php",
+              "hostingstart.html"
+            ],
+            "netFrameworkVersion": "v6.0",
+            "requestTracingEnabled": false,
+            "remoteDebuggingEnabled": false,
+            "remoteDebuggingVersion": "VS2019",
+            "httpLoggingEnabled": false,
+            "acrUseManagedIdentityCreds": false,
+            "logsDirectorySizeLimit": 35,
+            "detailedErrorLoggingEnabled": true,
+            "scmType": "VSTSRM",
+            "use32BitWorkerProcess": true,
+            "webSocketsEnabled": false,
+            "alwaysOn": false,
+            "managedPipelineMode": "Integrated",
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot",
+                "preloadEnabled": false
+              }
+            ],
+            "loadBalancing": "LeastRequests",
+            "experiments": {
+              "rampUpRules": []
+            },
+            "autoHealEnabled": false,
+            "vnetRouteAllEnabled": false,
+            "vnetPrivatePortsCount": 0,
+            "localMySqlEnabled": false,
+            "ipSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictionsUseMain": false,
+            "http20Enabled": true,
+            "minTlsVersion": "1.2",
+            "scmMinTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "preWarmedInstanceCount": 0,
+            "functionAppScaleLimit": 0,
+            "functionsRuntimeScaleMonitoringEnabled": false,
+            "minimumElasticInstanceCount": 0,
+            "azureStorageAccounts": {}
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2021-03-01",
+      "name": "[variables('apps').IssuingOrg2]",
+      "location": "UK South",
+      "dependsOn": [
+        "[variables('serverFarmName')]"
+      ],
+      "kind": "api",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverFarmName'))]",
+        "reserved": false,
+        "isXenon": false,
+        "hyperV": false,
+        "siteConfig": {
+          "numberOfWorkers": 1,
+          "acrUseManagedIdentityCreds": false,
+          "alwaysOn": false,
+          "http20Enabled": true,
+          "functionAppScaleLimit": 0,
+          "minimumElasticInstanceCount": 0
+        },
+        "scmSiteAlsoStopped": false,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "clientCertMode": "Required",
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "httpsOnly": false,
+        "redundancyMode": "None",
+        "storageAccountRequired": false,
+        "keyVaultReferenceIdentity": "SystemAssigned"
+      },
+      "resources": [
+        {
+          "type": "config",
+          "apiVersion": "2021-03-01",
+          "name": "web",
+          "location": "UK South",
+          "dependsOn": [
+            "[variables('appConfigurationName')]",
+            "[variables('apps').IssuingOrg2]"
+          ],
+          "tags": {},
+          "properties": {
+            "appSettings": [
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference(variables('insightsName')).InstrumentationKey]",
+                "slotSetting": false
+              },
+              {
+                "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                "value": "[reference(variables('insightsName')).ConnectionString]",
+                "slotSetting": false
+              },
+              {
+                "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+                "value": "~3",
+                "slotSetting": false
+              },
+              {
+                "name": "XDT_MicrosoftApplicationInsights_Mode",
+                "value": "Recommended",
+                "slotSetting": false
+              },
+              {
+                "name": "IssuerConfigurationLabel",
+                "value": "IssuingOrg2",
+                "slotSetting": false
+              }
+            ],
+            "connectionStrings": [
+              {
+                "name": "AppConfig",
+                "connectionString": "[reference(variables('appConfigurationName')).endpoint]",
+                "type": "Custom",
+                "slotSetting": false
+              }
+            ],
+            "numberOfWorkers": 1,
+            "defaultDocuments": [
+              "Default.htm",
+              "Default.html",
+              "Default.asp",
+              "index.htm",
+              "index.html",
+              "iisstart.htm",
+              "default.aspx",
+              "index.php",
+              "hostingstart.html"
+            ],
+            "netFrameworkVersion": "v6.0",
+            "requestTracingEnabled": false,
+            "remoteDebuggingEnabled": false,
+            "remoteDebuggingVersion": "VS2019",
+            "httpLoggingEnabled": false,
+            "acrUseManagedIdentityCreds": false,
+            "logsDirectorySizeLimit": 35,
+            "detailedErrorLoggingEnabled": true,
+            "scmType": "VSTSRM",
+            "use32BitWorkerProcess": true,
+            "webSocketsEnabled": false,
+            "alwaysOn": false,
+            "managedPipelineMode": "Integrated",
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot",
+                "preloadEnabled": false
+              }
+            ],
+            "loadBalancing": "LeastRequests",
+            "experiments": {
+              "rampUpRules": []
+            },
+            "autoHealEnabled": false,
+            "vnetRouteAllEnabled": false,
+            "vnetPrivatePortsCount": 0,
+            "localMySqlEnabled": false,
+            "ipSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictionsUseMain": false,
+            "http20Enabled": true,
+            "minTlsVersion": "1.2",
+            "scmMinTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "preWarmedInstanceCount": 0,
+            "functionAppScaleLimit": 0,
+            "functionsRuntimeScaleMonitoringEnabled": false,
+            "minimumElasticInstanceCount": 0,
+            "azureStorageAccounts": {}
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2021-03-01",
+      "name": "[variables('apps').container]",
+      "location": "UK South",
+      "dependsOn": [
+        "[variables('serverFarmName')]"
+      ],
+      "kind": "api",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverFarmName'))]",
+        "reserved": false,
+        "isXenon": false,
+        "hyperV": false,
+        "siteConfig": {
+          "numberOfWorkers": 1,
+          "acrUseManagedIdentityCreds": false,
+          "alwaysOn": false,
+          "http20Enabled": true,
+          "functionAppScaleLimit": 0,
+          "minimumElasticInstanceCount": 0
+        },
+        "scmSiteAlsoStopped": false,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "clientCertMode": "Required",
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "httpsOnly": false,
+        "redundancyMode": "None",
+        "storageAccountRequired": false,
+        "keyVaultReferenceIdentity": "SystemAssigned"
+      },
+      "resources": [
+        {
+          "type": "config",
+          "apiVersion": "2021-03-01",
+          "name": "web",
+          "location": "UK South",
+          "dependsOn": [
+            "[variables('appConfigurationName')]",
+            "[variables('apps').container]"
+          ],
+          "tags": {},
+          "properties": {
+            "appSettings": [
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference(variables('insightsName')).InstrumentationKey]",
+                "slotSetting": false
+              },
+              {
+                "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                "value": "[reference(variables('insightsName')).ConnectionString]",
+                "slotSetting": false
+              },
+              {
+                "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+                "value": "~3",
+                "slotSetting": false
+              },
+              {
+                "name": "XDT_MicrosoftApplicationInsights_Mode",
+                "value": "Recommended",
+                "slotSetting": false
+              }
+            ],
+            "connectionStrings": [
+              {
+                "name": "AppConfig",
+                "connectionString": "[reference(variables('appConfigurationName')).endpoint]",
+                "type": "Custom",
+                "slotSetting": false
+              }
+            ],
+            "numberOfWorkers": 1,
+            "defaultDocuments": [
+              "Default.htm",
+              "Default.html",
+              "Default.asp",
+              "index.htm",
+              "index.html",
+              "iisstart.htm",
+              "default.aspx",
+              "index.php",
+              "hostingstart.html"
+            ],
+            "netFrameworkVersion": "v6.0",
+            "requestTracingEnabled": false,
+            "remoteDebuggingEnabled": false,
+            "remoteDebuggingVersion": "VS2019",
+            "httpLoggingEnabled": false,
+            "acrUseManagedIdentityCreds": false,
+            "logsDirectorySizeLimit": 35,
+            "detailedErrorLoggingEnabled": true,
+            "scmType": "VSTSRM",
+            "use32BitWorkerProcess": true,
+            "webSocketsEnabled": false,
+            "alwaysOn": false,
+            "managedPipelineMode": "Integrated",
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot",
+                "preloadEnabled": false
+              }
+            ],
+            "loadBalancing": "LeastRequests",
+            "experiments": {
+              "rampUpRules": []
+            },
+            "autoHealEnabled": false,
+            "vnetRouteAllEnabled": false,
+            "vnetPrivatePortsCount": 0,
+            "localMySqlEnabled": false,
+            "ipSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictions": [
+              {
+                "ipAddress": "Any",
+                "action": "Allow",
+                "priority": 1,
+                "name": "Allow all",
+                "description": "Allow all access"
+              }
+            ],
+            "scmIpSecurityRestrictionsUseMain": false,
+            "http20Enabled": true,
+            "minTlsVersion": "1.2",
+            "scmMinTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "preWarmedInstanceCount": 0,
+            "functionAppScaleLimit": 0,
+            "functionsRuntimeScaleMonitoringEnabled": false,
+            "minimumElasticInstanceCount": 0,
+            "azureStorageAccounts": {}
+          }
+        }
+      ]
+    },
+
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2021-11-01-preview",
+      "name": "[variables('databaseServerName')]",
+      "location": "uksouth",
+      "kind": "v12.0",
+      "properties": {
+        "version": "12.0",
+        "minimalTlsVersion": "1.2",
+        "publicNetworkAccess": "Enabled",
+        "administrators": {
+          "administratorType": "ActiveDirectory",
+          "principalType": "User",
+          "login": "Niall.Till@sitekit.co.uk",
+          "sid": "418659c3-f601-4e83-a25c-aeb43ce97a9e",
+          "tenantId": "1639a144-5427-449c-9f80-74e622a1751f",
+          "azureADOnlyAuthentication": true
+        },
+        "restrictOutboundNetworkAccess": "Disabled"
+      },
+      "resources": [
+        {
+          "type": "databases",
+          "apiVersion": "2021-11-01-preview",
+          "name": "[concat('SSP', parameters('environment') ,'SsAudit')]",
+          "location": "uksouth",
+          "dependsOn": [
+            "[variables('databaseServerName')]"
+          ],
+          "sku": {
+            "name": "Standard",
+            "tier": "Standard",
+            "capacity": 10
+          },
+          "kind": "v12.0,user",
+          "properties": {
+            "collation": "SQL_Latin1_General_CP1_CI_AS",
+            "maxSizeBytes": 268435456000,
+            "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+            "zoneRedundant": false,
+            "readScale": "Disabled",
+            "requestedBackupStorageRedundancy": "Local",
+            "isLedgerOn": false
+          }
+        }
+      ]
+    },
+
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-09-01",
+      "name": "[variables('storageName')]",
+      "location": "uksouth",
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "defaultToOAuthAuthentication": true,
+        "publicNetworkAccess": "Enabled",
+        "allowCrossTenantReplication": true,
+        "minimumTlsVersion": "TLS1_2",
+        "allowBlobPublicAccess": true,
+        "allowSharedKeyAccess": true,
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "virtualNetworkRules": [],
+          "ipRules": [],
+          "defaultAction": "Allow"
+        },
+        "supportsHttpsTrafficOnly": true,
+        "encryption": {
+          "requireInfrastructureEncryption": false,
+          "services": {
+            "file": {
+              "keyType": "Account",
+              "enabled": true
+            },
+            "blob": {
+              "keyType": "Account",
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        },
+        "accessTier": "Hot"
+      }
+    },
+
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2021-11-01-preview",
+      "name": "[concat('SSP', parameters('environment') ,'SsKeyVault')]",
+      "location": "uksouth",
+      "properties": {
+        "sku": {
+          "family": "A",
+          "name": "Standard"
+        },
+        "tenantId": "1639a144-5427-449c-9f80-74e622a1751f",
+        "enabledForDeployment": false,
+        "enabledForDiskEncryption": false,
+        "enabledForTemplateDeployment": false,
+        "enableSoftDelete": true,
+        "softDeleteRetentionInDays": 90,
+        "enableRbacAuthorization": true,
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+
+    {
+      "type": "Microsoft.ServiceBus/namespaces",
+      "apiVersion": "2021-11-01",
+      "name": "[concat('SSP', parameters('environment') ,'SsServiceBus')]",
+      "location": "UK South",
+      "sku": {
+        "name": "Standard",
+        "tier": "Standard"
+      },
+      "properties": {
+        "disableLocalAuth": false,
+        "zoneRedundant": false
+      },
+      "resources": [
+        {
+          "type": "topics",
+          "apiVersion": "2021-11-01",
+          "name": "connectionrequests",
+          "location": "UK South",
+          "dependsOn": [
+            "[concat('SSP', parameters('environment') ,'SsServiceBus')]"
+          ],
+          "properties": {
+            "maxMessageSizeInKilobytes": 256,
+            "defaultMessageTimeToLive": "P14D",
+            "maxSizeInMegabytes": 1024,
+            "requiresDuplicateDetection": false,
+            "duplicateDetectionHistoryTimeWindow": "PT10M",
+            "enableBatchedOperations": true,
+            "status": "Active",
+            "supportOrdering": true,
+            "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+            "enablePartitioning": false,
+            "enableExpress": false
+          },
+          "resources": [
+            {
+              "type": "subscriptions",
+              "apiVersion": "2021-11-01",
+              "name": "Dev_Organisation_Subscription",
+              "location": "UK South",
+              "dependsOn": [
+                "[concat('SSP', parameters('environment') ,'SsServiceBus')]",
+                "connectionrequests"
+              ],
+              "properties": {
+                "isClientAffine": false,
+                "lockDuration": "PT30S",
+                "requiresSession": false,
+                "defaultMessageTimeToLive": "P14D",
+                "deadLetteringOnMessageExpiration": false,
+                "deadLetteringOnFilterEvaluationExceptions": false,
+                "maxDeliveryCount": 100,
+                "status": "Active",
+                "enableBatchedOperations": true,
+                "autoDeleteOnIdle": "P14D"
+              },
+              "resources": [
+                {
+                  "type": "rules",
+                  "apiVersion": "2021-11-01",
+                  "name": "OrganisationId_filter",
+                  "location": "UK South",
+                  "dependsOn": [
+                    "[concat('SSP', parameters('environment') ,'SsServiceBus')]",
+                    "connectionrequests",
+                    "Dev_Organisation_Subscription"
+                  ],
+                  "properties": {
+                    "action": {},
+                    "filterType": "SqlFilter",
+                    "sqlFilter": {
+                      "sqlExpression": "\"dsp:organisationId\"= 'organisation_id'",
+                      "compatibilityLevel": 20
+                    }
+                  }
+                }
+              ]
+            }
+
+          ]
+        },
+        {
+          "type": "topics",
+          "apiVersion": "2021-11-01",
+          "name": "issuedcredentials",
+          "location": "UK South",
+          "dependsOn": [
+            "[concat('SSP', parameters('environment') ,'SsServiceBus')]"
+          ],
+          "properties": {
+            "maxMessageSizeInKilobytes": 256,
+            "defaultMessageTimeToLive": "P14D",
+            "maxSizeInMegabytes": 1024,
+            "requiresDuplicateDetection": false,
+            "duplicateDetectionHistoryTimeWindow": "PT10M",
+            "enableBatchedOperations": true,
+            "status": "Active",
+            "supportOrdering": true,
+            "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+            "enablePartitioning": false,
+            "enableExpress": false
+          }
+        }
+      ]
+    },
+
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-08-01",
+      "name": "[variables('apiManagement')]",
+      "location": "UK South",
+      "sku": {
+        "name": "Developer",
+        "capacity": 1
+      },
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "publisherEmail": "niall.till@sitekit.co.uk",
+        "publisherName": "Sitekit",
+        "customProperties": {
+          "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls10": "False",
+          "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls11": "False",
+          "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls10": "False",
+          "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls11": "False",
+          "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Ssl30": "False",
+          "Microsoft.WindowsAzure.ApiManagement.Gateway.Protocols.Server.Http2": "true",
+          "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Ssl30": "False",
+          "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Ciphers.TripleDes168": "False"
+        },
+        "virtualNetworkType": "None",
+        "disableGateway": false,
+        "apiVersionConstraint": {},
+        "publicNetworkAccess": "Enabled"
+      },
+      "resources": [
+        {
+          "type": "apis",
+          "apiVersion": "2021-08-01",
+          "name": "ApiAudit",
+          "dependsOn": [
+            "[variables('apiManagement')]",
+            "[variables('apps').audit]"
+          ],
+          "properties": {
+            "displayName": "Api.Audit",
+            "apiRevision": "1",
+            "subscriptionRequired": true,
+            "serviceUrl": "[concat('https://', reference(variables('apps').audit).defaultHostName)]",
+            "path": "Audit",
+            "protocols": [
+              "https"
+            ],
+            "isCurrent": true
+          }
+        },
+        {
+          "type": "apis",
+          "apiVersion": "2021-08-01",
+          "name": "ApiContainer",
+          "dependsOn": [
+            "[variables('apiManagement')]",
+            "[variables('apps').container]"
+          ],
+          "properties": {
+            "displayName": "Api.Container",
+            "apiRevision": "1",
+            "subscriptionRequired": true,
+            "serviceUrl": "[concat('https://', reference(variables('apps').container).defaultHostName)]",
+            "path": "Container",
+            "protocols": [
+              "https"
+            ],
+            "isCurrent": true
+          }
+        },
+        {
+          "type": "apis",
+          "apiVersion": "2021-08-01",
+          "name": "ApiIssuer",
+          "dependsOn": [
+            "[variables('apiManagement')]",
+            "[variables('apps').organisations]"
+          ],
+          "properties": {
+            "displayName": "Api.Issuer",
+            "apiRevision": "1",
+            "subscriptionRequired": true,
+            "serviceUrl": "[concat('https://', reference(variables('apps').organisations).defaultHostName)]",
+            "path": "issuing",
+            "protocols": [
+              "https"
+            ],
+            "isCurrent": true
+          }
+        },
+        {
+          "type": "apis",
+          "apiVersion": "2021-08-01",
+          "name": "ApiMsGraph",
+          "dependsOn": [
+            "[variables('apiManagement')]",
+            "[variables('apps').MsGraph]"
+          ],
+          "properties": {
+            "displayName": "Api.MsGraph",
+            "apiRevision": "1",
+            "subscriptionRequired": true,
+            "serviceUrl": "[concat('https://', reference(variables('apps').MsGraph).defaultHostName)]",
+            "path": "MsGraph",
+            "protocols": [
+              "https"
+            ],
+            "isCurrent": true
+          }
+        },
+        {
+          "type": "apis",
+          "apiVersion": "2021-08-01",
+          "name": "ApiOrganisations",
+          "dependsOn": [
+            "[variables('apiManagement')]",
+            "[variables('apps').organisations]"
+          ],
+          "properties": {
+            "displayName": "Api.Organisations",
+            "apiRevision": "1",
+            "subscriptionRequired": true,
+            "serviceUrl": "[concat('https://', reference(variables('apps').organisations).defaultHostName)]",
+            "path": "organisations",
+            "protocols": [
+              "https"
+            ],
+            "isCurrent": true
+          }
+        },
+        {
+          "type": "apis",
+          "apiVersion": "2021-08-01",
+          "name": "ApiPostOfficeIssuer",
+          "dependsOn": [
+            "[variables('apiManagement')]",
+            "[variables('apps').PostOfficeIssuer]"
+          ],
+          "properties": {
+            "displayName": "Api.PostOfficeIssuer",
+            "apiRevision": "1",
+            "subscriptionRequired": true,
+            "serviceUrl": "[concat('https://', reference(variables('apps').PostOfficeIssuer).defaultHostName)]",
+            "path": "postoffice",
+            "protocols": [
+              "https"
+            ],
+            "isCurrent": true
+          }
+        },
+        {
+          "type": "identityProviders",
+          "apiVersion": "2021-08-01",
+          "name": "AadB2C",
+          "dependsOn": [
+            "[variables('apiManagement')]"
+          ],
+          "properties": {
+            "clientId": "[parameters('B2C_clientId')]",
+            "type": "aadB2C",
+            "authority": "[concat('SSP', parameters('environment') ,'SSB2C.b2clogin.com')]",
+            "signinTenant": "[concat('SSP', parameters('environment') ,'SSB2C.onmicrosoft.com')]",
+            "allowedTenants": [
+              "[concat('SSP', parameters('environment') ,'SSB2C.onmicrosoft.com')]"
+            ],
+            "signupPolicyName": "B2C_1_SUSI",
+            "signinPolicyName": "B2C_1_SUSI",
+            "profileEditingPolicyName": "B2C_1_Profile",
+            "passwordResetPolicyName": "B2C_1_PWRS",
+            "clientSecret": "[parameters('B2C_clientSecret')]"
+          }
+        }
+      ]
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // {
+    //   "type": "Microsoft.ApiManagement/service/apis/operations",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/ApiAudit/get-audit-id')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/apis', parameters('service_BFFDevApiManagement_name'), 'ApiAudit')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ],
+    //   "properties": {
+    //     "displayName": "/audit/{id} - GET",
+    //     "method": "GET",
+    //     "urlTemplate": "/audit/{id}",
+    //     "templateParameters": [
+    //       {
+    //         "name": "id",
+    //         "type": "string",
+    //         "required": true,
+    //         "values": [],
+    //         "schemaId": "6273c57001234e09401975b5",
+    //         "typeName": "Audit-id-GetRequest"
+    //       }
+    //     ],
+    //     "responses": [
+    //       {
+    //         "statusCode": 200,
+    //         "description": "Success",
+    //         "representations": [],
+    //         "headers": []
+    //       }
+    //     ]
+    //   }
+    // },
+    // {
+    //   "type": "Microsoft.ApiManagement/service/apis/operations",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/ApiAudit/get-audits')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/apis', parameters('service_BFFDevApiManagement_name'), 'ApiAudit')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ],
+    //   "properties": {
+    //     "displayName": "/audits - GET",
+    //     "method": "GET",
+    //     "urlTemplate": "/audits",
+    //     "templateParameters": [],
+    //     "responses": [
+    //       {
+    //         "statusCode": 200,
+    //         "description": "Success",
+    //         "representations": [
+    //           {
+    //             "contentType": "application/json",
+    //             "examples": {
+    //               "default": {
+    //                 "value": [
+    //                   {
+    //                     "id": "string",
+    //                     "action": 0,
+    //                     "type": "string",
+    //                     "requestId": "string",
+    //                     "issuedBy": "string",
+    //                     "issuedAt": "string"
+    //                   }
+    //                 ]
+    //               }
+    //             },
+    //             "schemaId": "6273c57001234e09401975b5",
+    //             "typeName": "AuditsGet200ApplicationJsonResponse"
+    //           }
+    //         ],
+    //         "headers": []
+    //       }
+    //     ]
+    //   }
+    // },
+    // {
+    //   "type": "Microsoft.ApiManagement/service/apis/operations",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/ApiPostOfficeIssuer/GetClientResponse')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/apis', parameters('service_BFFDevApiManagement_name'), 'ApiPostOfficeIssuer')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ],
+    //   "properties": {
+    //     "displayName": "GetClientResponse",
+    //     "method": "POST",
+    //     "urlTemplate": "/GetClientResponse",
+    //     "templateParameters": [],
+    //     "request": {
+    //       "queryParameters": [],
+    //       "headers": [],
+    //       "representations": [
+    //         {
+    //           "contentType": "application/json",
+    //           "examples": {
+    //             "default": {
+    //               "value": {}
+    //             }
+    //           },
+    //           "schemaId": "6267fd304634611280854555",
+    //           "typeName": "ClientRequest"
+    //         }
+    //       ]
+    //     },
+    //     "responses": [
+    //       {
+    //         "statusCode": 200,
+    //         "description": "Success",
+    //         "representations": [
+    //           {
+    //             "contentType": "application/json",
+    //             "examples": {
+    //               "default": {
+    //                 "value": {}
+    //               }
+    //             },
+    //             "schemaId": "6267fd304634611280854555",
+    //             "typeName": "ClientResponse"
+    //           }
+    //         ],
+    //         "headers": []
+    //       }
+    //     ]
+    //   }
+    // },
+    // {
+    //   "type": "Microsoft.ApiManagement/service/apis/operations",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/ApiPostOfficeIssuer/GetCredentialResponse')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/apis', parameters('service_BFFDevApiManagement_name'), 'ApiPostOfficeIssuer')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ],
+    //   "properties": {
+    //     "displayName": "GetCredentialResponse",
+    //     "method": "POST",
+    //     "urlTemplate": "/GetCredentialResponse",
+    //     "templateParameters": [],
+    //     "request": {
+    //       "queryParameters": [],
+    //       "headers": [],
+    //       "representations": [
+    //         {
+    //           "contentType": "application/json",
+    //           "examples": {
+    //             "default": {
+    //               "value": {}
+    //             }
+    //           },
+    //           "schemaId": "6267fd304634611280854555",
+    //           "typeName": "CredentialRequest"
+    //         }
+    //       ]
+    //     },
+    //     "responses": [
+    //       {
+    //         "statusCode": 200,
+    //         "description": "Success",
+    //         "representations": [
+    //           {
+    //             "contentType": "application/json",
+    //             "examples": {
+    //               "default": {
+    //                 "value": {}
+    //               }
+    //             },
+    //             "schemaId": "6267fd304634611280854555",
+    //             "typeName": "IssuableCredential"
+    //           }
+    //         ],
+    //         "headers": []
+    //       }
+    //     ]
+    //   }
+    // },
+    // {
+    //   "type": "Microsoft.ApiManagement/service/apis/operations",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/echo-api/modify-resource')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/apis', parameters('service_BFFDevApiManagement_name'), 'echo-api')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ],
+    //   "properties": {
+    //     "displayName": "Modify Resource",
+    //     "method": "PUT",
+    //     "urlTemplate": "/resource",
+    //     "templateParameters": [],
+    //     "description": "A demonstration of a PUT call handled by the same \"echo\" backend as above. You can now specify a request body in addition to headers and it will be returned as well.",
+    //     "responses": [
+    //       {
+    //         "statusCode": 200,
+    //         "representations": [],
+    //         "headers": []
+    //       }
+    //     ]
+    //   }
+    // },
+    // {
+    //   "type": "Microsoft.ApiManagement/service/apis/operations",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/ApiAudit/post-audit')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/apis', parameters('service_BFFDevApiManagement_name'), 'ApiAudit')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ],
+    //   "properties": {
+    //     "displayName": "/audit - POST",
+    //     "method": "POST",
+    //     "urlTemplate": "/audit",
+    //     "templateParameters": [],
+    //     "request": {
+    //       "queryParameters": [],
+    //       "headers": [],
+    //       "representations": [
+    //         {
+    //           "contentType": "application/json",
+    //           "examples": {
+    //             "default": {
+    //               "value": {}
+    //             }
+    //           },
+    //           "schemaId": "6273c57001234e09401975b5",
+    //           "typeName": "AuditRecordDto"
+    //         }
+    //       ]
+    //     },
+    //     "responses": [
+    //       {
+    //         "statusCode": 200,
+    //         "description": "Success",
+    //         "representations": [],
+    //         "headers": []
+    //       }
+    //     ]
+    //   }
+    // },
+    // {
+    //   "type": "Microsoft.ApiManagement/service/apis/operations",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/echo-api/remove-resource')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/apis', parameters('service_BFFDevApiManagement_name'), 'echo-api')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ],
+    //   "properties": {
+    //     "displayName": "Remove resource",
+    //     "method": "DELETE",
+    //     "urlTemplate": "/resource",
+    //     "templateParameters": [],
+    //     "description": "A demonstration of a DELETE call which traditionally deletes the resource. It is based on the same \"echo\" backend as in all other operations so nothing is actually deleted.",
+    //     "responses": [
+    //       {
+    //         "statusCode": 200,
+    //         "representations": [],
+    //         "headers": []
+    //       }
+    //     ]
+    //   }
+    // },
+    // {
+    //   "type": "Microsoft.ApiManagement/service/apis/operations",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/echo-api/retrieve-header-only')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/apis', parameters('service_BFFDevApiManagement_name'), 'echo-api')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ],
+    //   "properties": {
+    //     "displayName": "Retrieve header only",
+    //     "method": "HEAD",
+    //     "urlTemplate": "/resource",
+    //     "templateParameters": [],
+    //     "description": "The HEAD operation returns only headers. In this demonstration a policy is used to set additional headers when the response is returned and to enable JSONP.",
+    //     "responses": [
+    //       {
+    //         "statusCode": 200,
+    //         "representations": [],
+    //         "headers": []
+    //       }
+    //     ]
+    //   }
+    // },
+    // {
+    //   "type": "Microsoft.ApiManagement/service/apis/operations",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/echo-api/retrieve-resource')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/apis', parameters('service_BFFDevApiManagement_name'), 'echo-api')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ],
+    //   "properties": {
+    //     "displayName": "Retrieve resource",
+    //     "method": "GET",
+    //     "urlTemplate": "/resource",
+    //     "templateParameters": [],
+    //     "description": "A demonstration of a GET call on a sample resource. It is handled by an \"echo\" backend which returns a response equal to the request (the supplied headers and body are being returned as received).",
+    //     "request": {
+    //       "queryParameters": [
+    //         {
+    //           "name": "param1",
+    //           "description": "A sample parameter that is required and has a default value of \"sample\".",
+    //           "type": "string",
+    //           "defaultValue": "sample",
+    //           "required": true,
+    //           "values": [
+    //             "sample"
+    //           ]
+    //         },
+    //         {
+    //           "name": "param2",
+    //           "description": "Another sample parameter, set to not required.",
+    //           "type": "number",
+    //           "values": []
+    //         }
+    //       ],
+    //       "headers": [],
+    //       "representations": []
+    //     },
+    //     "responses": [
+    //       {
+    //         "statusCode": 200,
+    //         "description": "Returned in all cases.",
+    //         "representations": [],
+    //         "headers": []
+    //       }
+    //     ]
+    //   }
+    // },
+    // {
+    //   "type": "Microsoft.ApiManagement/service/apis/operations",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/echo-api/retrieve-resource-cached')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/apis', parameters('service_BFFDevApiManagement_name'), 'echo-api')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ],
+    //   "properties": {
+    //     "displayName": "Retrieve resource (cached)",
+    //     "method": "GET",
+    //     "urlTemplate": "/resource-cached",
+    //     "templateParameters": [],
+    //     "description": "A demonstration of a GET call with caching enabled on the same \"echo\" backend as above. Cache TTL is set to 1 hour. When you make the first request the headers you supplied will be cached. Subsequent calls will return the same headers as the first time even if you change them in your request.",
+    //     "request": {
+    //       "queryParameters": [
+    //         {
+    //           "name": "param1",
+    //           "description": "A sample parameter that is required and has a default value of \"sample\".",
+    //           "type": "string",
+    //           "defaultValue": "sample",
+    //           "required": true,
+    //           "values": [
+    //             "sample"
+    //           ]
+    //         },
+    //         {
+    //           "name": "param2",
+    //           "description": "Another sample parameter, set to not required.",
+    //           "type": "string",
+    //           "values": []
+    //         }
+    //       ],
+    //       "headers": [],
+    //       "representations": []
+    //     },
+    //     "responses": [
+    //       {
+    //         "statusCode": 200,
+    //         "representations": [],
+    //         "headers": []
+    //       }
+    //     ]
+    //   }
+    // },
+    // {
+    //   "type": "Microsoft.ApiManagement/service/apis/schemas",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/DspDevApi/62628a41ef77bb71cbd07cda')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/apis', parameters('service_BFFDevApiManagement_name'), 'DspDevApi')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ],
+    //   "properties": {
+    //     "contentType": "application/vnd.ms-azure-apim.swagger.definitions+json",
+    //     "document": {
+    //       "definitions": {}
+    //     }
+    //   }
+    // },
+    // {
+    //   "type": "Microsoft.ApiManagement/service/apis/schemas",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/ApiPostOfficeIssuer/6267fd304634611280854555')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/apis', parameters('service_BFFDevApiManagement_name'), 'ApiPostOfficeIssuer')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ],
+    //   "properties": {
+    //     "contentType": "application/vnd.oai.openapi.components+json",
+    //     "document": {
+    //       "components": {}
+    //     }
+    //   }
+    // },
+    // {
+    //   "type": "Microsoft.ApiManagement/service/apis/schemas",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/ApiAudit/6273c57001234e09401975b5')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/apis', parameters('service_BFFDevApiManagement_name'), 'ApiAudit')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ],
+    //   "properties": {
+    //     "contentType": "application/vnd.oai.openapi.components+json",
+    //     "document": {
+    //       "components": {}
+    //     }
+    //   }
+    // },
+    // {
+    //   "type": "Microsoft.ApiManagement/service/groups/users",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/administrators/1')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/groups', parameters('service_BFFDevApiManagement_name'), 'administrators')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ]
+    // },
+    // {
+    //   "type": "Microsoft.ApiManagement/service/groups/users",
+    //   "apiVersion": "2021-08-01",
+    //   "name": "[concat(parameters('service_BFFDevApiManagement_name'), '/developers/1')]",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.ApiManagement/service/groups', parameters('service_BFFDevApiManagement_name'), 'developers')]",
+    //     "[resourceId('Microsoft.ApiManagement/service', parameters('service_BFFDevApiManagement_name'))]"
+    //   ]
+    // }
+  ]
+}

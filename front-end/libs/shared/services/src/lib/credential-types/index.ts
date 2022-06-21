@@ -1,0 +1,1 @@
+export * as service from './credential-types.service';

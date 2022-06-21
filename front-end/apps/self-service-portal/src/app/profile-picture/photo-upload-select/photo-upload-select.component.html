@@ -1,0 +1,12 @@
+<h1 class="nhsuk-heading-l">
+    <span class="nhsuk-caption-l">{{heading}}</span>
+    Choose a photo from your device or take one with your camera.
+</h1>
+<a class="nhsuk-button nhsuk-u-margin-top-4" (click)="takePhoto()" draggable="false">
+    Take photo
+</a>&nbsp;
+<self-service-photo-upload style="display: inline-block;" (imageUrl)="imageUploadedEvent($event)"
+    (errorMessage)="errorMessageEvent($event)">
+</self-service-photo-upload>
+<br />
+<span class="errorMessage">{{errorMessage}}</span>

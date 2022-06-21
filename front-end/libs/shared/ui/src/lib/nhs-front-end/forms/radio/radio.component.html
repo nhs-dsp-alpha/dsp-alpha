@@ -1,0 +1,26 @@
+<fieldset class="nhsuk-fieldset" [attr.aria-describedby]="params?.hint?.id">
+  <legend class="nhsuk-fieldset__legend">
+    <span>
+    {{params?.fieldsetLegendText}}
+  </span>
+  </legend>
+<div class="nhsuk-radios { params?.classes }}">
+    <nhs-hint-text *ngIf="params?.hint" [params]="params?.hint"></nhs-hint-text>
+    <nhs-error-message *ngIf="params?.errorMessage" [params]="params?.errorMessage"></nhs-error-message>
+    <div class="nhsuk-radios__item" *ngFor="let item of params?.items">
+      <input class="nhsuk-radios__input" id="{{item?.id}}" name="{{params?.name}}" type="radio" 
+      value="{{item?.value}}" [checked]="item?.checked" formControlName="{{params?.name}}">
+      <label class="nhsuk-label nhsuk-radios__label" for="{{item?.id}}">       
+        <span *ngIf="item?.html">
+            {{item?.html}}
+        </span>
+        <span *ngIf="item?.text">
+            {{item?.text}}
+        </span>
+      </label>
+      <nhs-hint-text *ngIf="item?.hint" [params]="item?.hint"></nhs-hint-text>
+      <div *ngIf="item?.divider" class="nhsuk-radios__divider">{{item?.divider}}</div>
+    </div>
+    
+  </div>
+</fieldset>

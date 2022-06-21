@@ -1,0 +1,46 @@
+<div *ngIf="params?.panel; else table" class="nhsuk-table__panel-with-heading-tab {{ params?.panelClasses }}">
+    <div *ngIf="params?.heading" class="h{{ headingLevel }} nhsuk-table__heading-tab">{{ params?.heading }}</div>
+    <ng-container *ngTemplateOutlet="table"></ng-container>
+</div>
+
+<ng-template #table>
+    <table [attr.role]="params?.responsive ? 'table' : null" class="{{ params?.tableClasses }}"
+        [ngClass]="{'nhsuk-table': !(params?.responsive), 'nhsuk-table-responsive': params?.responsive}">
+        <!-- {%- if params.tableClasses %} {% endif %}" {%- for attribute, value in params.attributes
+        %} {{ attribute }}="{{ value }}" {% endfor %}> -->
+        <caption *ngIf="params?.caption" class="nhsuk-table__caption {{ params?.captionClasses }}">{{ params?.caption }}
+        </caption>
+        <thead *ngIf="params?.head" role="rowgroup" class="nhsuk-table__head">
+            <tr role="row">
+                <th *ngFor="let item of params.head" role="columnheader"
+                    class="{{item.format ? 'nhsuk-table__header--' + item.format : ''}}" scope="col" [innerHTML]="item.safeHtml || item.text">
+                </th>
+            </tr>
+        </thead>
+        <tbody class="nhsuk-table__body">
+            <tr *ngFor="let row of params?.rows" role="row" class="nhsuk-table__row">
+
+                <ng-container *ngIf="params?.responsive; else nonResponsive">
+                    <td *ngFor="let cell of row" role="cell" (click)="cell.clickable ? onClick($event, cell) : null" class="nhsuk-table__cell {{cell.format ? 'nhsuk-table__cell--' + cell.format : ''}}">
+                        <span class="nhsuk-table-responsive__heading">{{cell.header}} </span>
+                        <span [innerHTML]="cell.safeHtml || cell.text"></span>
+                    </td>
+                </ng-container>
+
+                <ng-template #nonResponsive>
+                    <ng-container
+                        *ngFor="let cell of row; first as first;">
+                        <th *ngIf="first && params?.firstCellIsHeader; else regularCell" class="nhsuk-table__header" scope="row">{{
+                            cell.safeHtml || cell.text }}</th>
+                        <ng-template #regularCell>
+                            <td (click)="cell.clickable ? onClick($event, cell) : null" class="nhsuk-table__cell {{cell.format ? 'nhsuk-table__cell--' + cell.format : ''}}"
+                                [attr.colspan]="cell.colspan" [attr.rowspan]="cell.rowspan">
+                                <span [innerHTML]="cell.safeHtml || cell.text"></span>
+                            </td>
+                        </ng-template>
+                    </ng-container>
+                </ng-template>
+            </tr>
+        </tbody>
+    </table>
+</ng-template>

@@ -1,0 +1,261 @@
+steps:
+  - checkout: none
+
+  - download: DigitalStaffPassport_Build
+    artifact: "drop"
+  - download: DigitalStaffPassport_Build
+    artifact: "Arm"
+
+  - task: AzureResourceManagerTemplateDeployment@3
+    displayName: "Update Self Services Environment"
+    continueOnError: true
+    inputs:
+      deploymentScope: "Resource Group"
+      azureResourceManagerConnection: ${{ parameters.azureSubscription }}
+      subscriptionId: ${{ parameters.subscriptionId }}
+      action: "Create Or Update Resource Group"
+      resourceGroupName: "SSP-${{ parameters.environment }}-SS"
+      location: "UK South"
+      templateLocation: "Linked artifact"
+      csmFile: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\Arm\Self-Service.json'
+      overrideParameters: "-environment ${{ parameters.environment }} -B2C_clientId ${{ parameters.B2CClientId }} -B2C_clientSecret ${{ parameters.B2CSecret }}"
+      deploymentMode: "Incremental"
+      deploymentName: "Self-Services-update"
+
+  # - task: AzureResourceManagerTemplateDeployment@3
+  #   displayName: 'Update Org Environment'
+  #   inputs:
+  #     deploymentScope: 'Resource Group'
+  #     azureResourceManagerConnection: ${{ parameters.azureSubscription }}
+  #     subscriptionId: ${{ parameters.subscriptionId }}
+  #     action: 'Create Or Update Resource Group'
+  #     resourceGroupName: 'SSP-${{ parameters.environment }}-Org'
+  #     location: 'UK South'
+  #     templateLocation: 'Linked artifact'
+  #     csmFile: ''
+  #     deploymentMode: 'Incremental'
+  #     deploymentName: 'Org-update'
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update Audit"
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "apiApp"
+      WebAppName: "ssp${{ parameters.environment }}SsApiAudit"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\Api.Audit.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update Issuer"
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "ssp${{ parameters.environment }}SsWppIssuer"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\Api.Issuer.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update Issuer"
+    condition: eq('${{ parameters.environment }}', 'Dev')
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "dspdevapiissuer"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\Api.Issuer.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update Post Office Issuer"
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "ssp${{ parameters.environment }}SsWppPostOfficeIssuer"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\Api.PostOfficeIssuer.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update Post Office Issuer"
+    condition: eq('${{ parameters.environment }}', 'Dev')
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "apipostofficeissuerdev"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\Api.PostOfficeIssuer.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update SelfServicePortal"
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "ssp${{ parameters.environment }}SsWppSelfServicePortal"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\BFF.SelfServicePortal.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update SelfServicePortal"
+    condition: eq('${{ parameters.environment }}', 'Dev')
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "dspdevselfserviceportal"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\BFF.SelfServicePortal.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update Organisations Api"
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "ssp${{ parameters.environment }}SsWppOrganisations"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\Api.Organisations.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update Organisations Api"
+    condition: eq('${{ parameters.environment }}', 'Dev')
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "dspdevapiorganisations"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\Api.Organisations.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update HrPortal"
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "ssp${{ parameters.environment }}SsWppHrPortalOrg1"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\BFF.HrPortal.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update HrPortal"
+    condition: eq('${{ parameters.environment }}', 'Dev')
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "dspdevhrportalorg1"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\BFF.HrPortal.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update HrPortal"
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "ssp${{ parameters.environment }}SsWppHrPortalOrg2"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\BFF.HrPortal.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update HrPortal"
+    condition: eq('${{ parameters.environment }}', 'Dev')
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "dspdevhrportalorg2"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\BFF.HrPortal.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update Issuing Org"
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "ssp${{ parameters.environment }}SsWppIssuingOrg2"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\Api.Issuing.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update Issuing Org"
+    condition: eq('${{ parameters.environment }}', 'Dev')
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "dspdevapiissuingorg2"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\Api.Issuing.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update MsGraph Api"
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "ssp${{ parameters.environment }}SsApiMsGraph"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\Api.MsGraph.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update Container Org"
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "ssp${{ parameters.environment }}SsApiContainer"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\Api.Container.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true
+
+  - task: AzureRmWebAppDeployment@4
+    displayName: "Update Container Org"
+    condition: eq('${{ parameters.environment }}', 'Dev')
+    inputs:
+      ConnectionType: "AzureRM"
+      azureSubscription: ${{ parameters.azureSubscription }}
+      appType: "webApp"
+      WebAppName: "sspdevssapicontainer"
+      package: '$(Agent.BuildDirectory)\DigitalStaffPassport_Build\drop\Api.Container.zip'
+      enableCustomDeployment: true
+      DeploymentType: "webDeploy"
+      RemoveAdditionalFilesFlag: true

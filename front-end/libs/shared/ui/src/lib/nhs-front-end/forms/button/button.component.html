@@ -1,0 +1,41 @@
+
+
+
+<div *ngIf="params?.element === 'button'">
+    <button 
+        [ngClass]="[params?.disabled ? 'nhsuk-button nhsuk-button--disabled' : 'nhsuk-button ' + params?.classes]" 
+        [name]="params?.name" [value]="params?.value" [type]="params?.type" [disabled]="params?.disabled" 
+        [attr.aria-disabled]="params?.disabled">
+        <span *ngIf="params?.html">
+            {{params?.html}}
+          </span>
+          <span *ngIf="params?.text">
+            {{params?.text}}
+          </span>
+      </button>
+</div>
+<div *ngIf="params?.element === 'input'">
+    <input [ngClass]="[params?.disabled ? 'nhsuk-button nhsuk-button--disabled' : 'nhsuk-button ' + params?.classes]" 
+        [name]="params?.name" [type]="params?.type"  [disabled]="params?.disabled" 
+        [attr.aria-disabled]="params?.disabled" [value]="params?.text" /> 
+</div>
+<div *ngIf="(!params?.element && params?.href) || params?.element === 'a'">
+    <a [ngClass]="[ params?.classes ? 'nhsuk-button ' + params?.classes : 'nhsuk-button']"  
+     draggable="false" href="{{params.href}}"  >
+
+     <span *ngIf="params?.html">
+        {{params?.html}}
+      </span>
+      <span *ngIf="params?.text">
+        {{params?.text}}
+      </span>
+    </a>
+</div>
+element: {{params?.element}}<br>
+type: {{params?.type}}<br>
+disabled: {{params?.disabled}}<br>
+value: {{params?.value}}<br>
+text: {{params?.text}}<br>
+html: {{params?.html}}<br>
+name: {{params?.name}}<br>
+classes: {{params?.classes}}<br>

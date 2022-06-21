@@ -1,0 +1,95 @@
+{
+  "projectType": "application",
+  "root": "apps/kiosk",
+  "sourceRoot": "apps/kiosk/src",
+  "prefix": "kiosk",
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:browser",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/kiosk",
+        "index": "apps/kiosk/src/index.html",
+        "main": "apps/kiosk/src/main.ts",
+        "polyfills": "apps/kiosk/src/polyfills.ts",
+        "tsConfig": "apps/kiosk/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": ["apps/kiosk/src/favicon.ico", "apps/kiosk/src/assets"],
+        "styles": ["apps/kiosk/src/styles.scss"],
+        "scripts": []
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "2kb",
+              "maximumError": "4kb"
+            }
+          ],
+          "fileReplacements": [
+            {
+              "replace": "apps/kiosk/src/environments/environment.ts",
+              "with": "apps/kiosk/src/environments/environment.prod.ts"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "configurations": {
+        "production": {
+          "browserTarget": "kiosk:build:production"
+        },
+        "development": {
+          "browserTarget": "kiosk:build:development"
+        }
+      },
+      "defaultConfiguration": "development",
+      "options": {
+        "port": 5002,
+        "proxyConfig": "apps/kiosk/proxy.conf.json"
+      }
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "browserTarget": "kiosk:build"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": [
+          "apps/kiosk/src/**/*.ts",
+          "apps/kiosk/src/**/*.html"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/apps/kiosk"],
+      "options": {
+        "jestConfig": "apps/kiosk/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

@@ -1,0 +1,21 @@
+<div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+        <ng-container *ngIf="landingAddPhoto">
+            <nhs-back-link [params]="cancelLink"></nhs-back-link>
+            <h1 class="nhsuk-heading-l">
+                Add a photo
+            </h1>
+            <p class="nhsuk-body">
+                You can choose to add a photo from your files or take a new photo using your camera.
+            </p>
+            <a class="nhsuk-button nhsuk-u-margin-top-4" (click)="startAddPhoto()" draggable="false">
+                Add photo
+            </a>
+        </ng-container>
+
+
+        <self-service-profile-picture-flow [heading]="heading" *ngIf="displayPhotoFlow" (cancel)="cancelFlow()"
+            (continue)="photoUploaded()">
+        </self-service-profile-picture-flow>
+    </div>
+</div>

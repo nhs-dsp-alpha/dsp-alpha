@@ -1,0 +1,10 @@
+<div *ngIf="!!params">
+<div [ngClass]="[ params?.classes ? 'nhsuk-hint ' + params?.classes : 'nhsuk-hint']" id="{{params?.id}}">
+    <span *ngIf="params?.html">
+        {{params?.html}}
+      </span>
+      <span *ngIf="params?.text">
+        {{params?.text}}
+      </span>
+  </div>
+</div>

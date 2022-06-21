@@ -1,0 +1,26 @@
+{
+  "projectType": "library",
+  "root": "libs/shared/authentication",
+  "sourceRoot": "libs/shared/authentication/src",
+  "prefix": "front-end",
+  "targets": {
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/shared/authentication"],
+      "options": {
+        "jestConfig": "libs/shared/authentication/jest.config.js",
+        "passWithNoTests": true
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": [
+          "libs/shared/authentication/src/**/*.ts",
+          "libs/shared/authentication/src/**/*.html"
+        ]
+      }
+    }
+  },
+  "tags": []
+}

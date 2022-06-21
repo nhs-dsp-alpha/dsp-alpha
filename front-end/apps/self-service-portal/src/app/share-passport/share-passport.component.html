@@ -1,0 +1,49 @@
+<div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+        <ng-container *ngTemplateOutlet="findOrg">
+            <!-- findOrg -->
+            <!-- selectCredentials -->
+        </ng-container>
+    </div>
+</div>
+
+<ng-template #findOrg>
+    <self-service-share-passport-find-organisation *ngIf="!organisationsFound else selectOrganisation"
+        (cancel)="returnHome()" (continue)="onOrganisationsFound($event)">
+    </self-service-share-passport-find-organisation>
+</ng-template>
+<ng-template #selectOrganisation>
+    <self-service-share-passport-select-organisation *ngIf="!organisationSelected else addDateOfBirth"
+        [organisations$]="organisations$" (cancel)="organisationsFound = false"
+        (organisationSelected)="onOrganisationCodeSelected($event)" (continue)="onOrganisationSelected($event)">
+    </self-service-share-passport-select-organisation>
+</ng-template>
+<ng-template #addDateOfBirth>
+    <self-service-share-passport-add-dob *ngIf="!dateOfBirthAdded else selectCredentials" [dob]="dob"
+        (cancel)="organisationSelected = false" (continue)="onDateOfBirthAdded($event)">
+    </self-service-share-passport-add-dob>
+</ng-template>
+<ng-template #selectCredentials>
+    <self-service-share-passport-share-credentials *ngIf="!credentialsSelected else verifyCredentials"
+        (cancel)="dateOfBirthAdded = false" (selectedCredentials)="onCredentialTypesSelected($event)"
+        (messageOutput)="onMessageSet($event)" [messageInput]="message"
+        [credentialsSelectedPreviously]="selectedCredentials" (reVerify)="onReverifyCredentials($event)">
+    </self-service-share-passport-share-credentials>
+</ng-template>
+<ng-template #verifyCredentials>
+    <self-service-share-passport-verify-credentials *ngIf="!credentialsVerified else verifyInformation"
+        [selectedCredentials]="selectedCredentials" (cancel)="credentialsSelected = false"
+        (continue)="onCredentialsVerified($event)">
+    </self-service-share-passport-verify-credentials>
+</ng-template>
+<ng-template #verifyInformation>
+    <self-service-share-passport-form *ngIf="!summarySent else passportShared" [busy]="busy"
+        [selectedOrganisation]="selectedOrganisation" [dob]="dob" [typeOfSharedInformation]="selectedCredentials"
+        [message]="message" (changeOrganisation)="onChangeOrganisation()" (changeDob)="onChangeDob()"
+        (changeSharedInformation)="onChangeSharedInformation()" (changeMessage)="onChangeMessage()"
+        (continue)="onSummaryFormContinue($event)"></self-service-share-passport-form>
+</ng-template>
+<ng-template #passportShared>
+    <self-service-share-passport-passport-shared [selectedOrganisation]="selectedOrganisation">
+    </self-service-share-passport-passport-shared>
+</ng-template>

@@ -1,0 +1,135 @@
+<ng-container *ngTemplateOutlet="displayUser">
+</ng-container>
+
+<ng-template #displayUser>
+    <div class="nhsuk-grid-row" *ngIf="!credentialsIssued else credsIssued">
+        <div class="nhsuk-grid-column-two-thirds">
+            <h1>Digital staff passport for Kasper Schmidt</h1>
+            <div class="nhsuk-card">
+                <div class="nhsuk-card__content">
+                    <dl class="nhsuk-summary-list">
+
+                        <div class="nhsuk-summary-list__row">
+                            <dt class="nhsuk-summary-list__key">
+                                Passport status
+                            </dt>
+                            <dd class="nhsuk-summary-list__value">
+                                {{request?.status}}
+                            </dd>
+
+                            <dd class="nhsuk-summary-list__actions">
+
+                                <a href="">
+                                </a>
+
+                            </dd>
+
+                        </div>
+
+                        <div class="nhsuk-summary-list__row">
+                            <dt class="nhsuk-summary-list__key">
+                                Photo
+                            </dt>
+                            <dd class="nhsuk-summary-list__value">
+                                <img src="https://nhsuk-dsp-prototype.herokuapp.com/images/profile-pic-kasper.png"
+                                    alt="Profile photo" style="width:200px;">
+                            </dd>
+
+                            <dd class="nhsuk-summary-list__actions">
+
+                                <a href="add-photo">
+                                    Change<span class="nhsuk-u-visually-hidden"> photo</span>
+                                </a>
+
+                            </dd>
+
+                        </div>
+
+                        <div class="nhsuk-summary-list__row">
+                            <dt class="nhsuk-summary-list__key">
+                                Name
+                            </dt>
+                            <dd class="nhsuk-summary-list__value">
+                                {{request?.displayName}}
+                            </dd>
+
+                            <dd class="nhsuk-summary-list__actions">
+
+                                <a href="#">
+                                    Change<span class="nhsuk-u-visually-hidden"> name</span>
+                                </a>
+
+                            </dd>
+
+                        </div>
+
+                        <div class="nhsuk-summary-list__row">
+                            <dt class="nhsuk-summary-list__key">
+                                Date of birth
+                            </dt>
+                            <dd class="nhsuk-summary-list__value">
+                                5 May 1987
+                            </dd>
+
+                            <dd class="nhsuk-summary-list__actions">
+
+                                <a href="#">
+                                    Change<span class="nhsuk-u-visually-hidden"> date of birth</span>
+                                </a>
+
+                            </dd>
+
+                        </div>
+
+                        <div class="nhsuk-summary-list__row">
+                            <dt class="nhsuk-summary-list__key">
+                                Telephone number
+                            </dt>
+                            <dd class="nhsuk-summary-list__value">
+                                07700 900359
+                            </dd>
+
+                            <dd class="nhsuk-summary-list__actions">
+
+                                <a href="#">
+                                    Change<span class="nhsuk-u-visually-hidden"> phone number</span>
+                                </a>
+
+                            </dd>
+
+                        </div>
+
+                        <div class="nhsuk-summary-list__row">
+                            <dt class="nhsuk-summary-list__key">
+                                Email address
+                            </dt>
+                            <dd class="nhsuk-summary-list__value">
+                                <p>kasper.schmidt22@example.com</p>
+                            </dd>
+
+                            <dd class="nhsuk-summary-list__actions">
+
+                                <a href="#">
+                                    Change<span class="nhsuk-u-visually-hidden"> email address</span>
+                                </a>
+
+                            </dd>
+
+                        </div>
+
+                    </dl>
+                </div>
+            </div>
+            <a class="nhsuk-button nhsuk-u-margin-top-4" draggable="false" (click)="onIssueCredentialClicked()">Issue
+                Credential</a>
+        </div>
+    </div>
+</ng-template>
+<ng-template #credsIssued>
+    <div class="nhsuk-grid-row">
+        <h1 class="nhsuk-heading-l">
+            <span class="nhsuk-caption-l">Credential issued</span>
+            The credential has been issued to the user.
+        </h1>
+    </div>
+</ng-template>

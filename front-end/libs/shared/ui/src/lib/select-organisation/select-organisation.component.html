@@ -1,0 +1,21 @@
+<fieldset class="nhsuk-fieldset">
+    <div class="nhsuk-form-group">
+
+        <div class="nhsuk-radios">
+
+            <div *ngFor="let organisation of organisations$ | async; index as i" class="nhsuk-radios__item">
+                <input class="nhsuk-radios__input" id="{{organisation.code}}" name="organisation" type="radio"
+                    value="{{organisation.code}}" [(ngModel)]="organisationCode">
+                <label class="nhsuk-label nhsuk-radios__label" for="org-1">
+                    {{organisation.name}}
+                </label>
+            </div>
+
+        </div>
+    </div>
+
+</fieldset>
+
+<button class="nhsuk-button nhsuk-u-margin-top-4" [disabled]="!selected" (click)="done()" draggable="false">
+    Continue
+</button>

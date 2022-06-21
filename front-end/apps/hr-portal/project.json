@@ -1,0 +1,98 @@
+{
+  "projectType": "application",
+  "root": "apps/hr-portal",
+  "sourceRoot": "apps/hr-portal/src",
+  "prefix": "hr-portal",
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:browser",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/hr-portal",
+        "index": "apps/hr-portal/src/index.html",
+        "main": "apps/hr-portal/src/main.ts",
+        "polyfills": "apps/hr-portal/src/polyfills.ts",
+        "tsConfig": "apps/hr-portal/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          "apps/hr-portal/src/favicon.ico",
+          "apps/hr-portal/src/assets"
+        ],
+        "styles": ["apps/hr-portal/src/styles.scss"],
+        "scripts": []
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "2kb",
+              "maximumError": "4kb"
+            }
+          ],
+          "fileReplacements": [
+            {
+              "replace": "apps/hr-portal/src/environments/environment.ts",
+              "with": "apps/hr-portal/src/environments/environment.prod.ts"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "configurations": {
+        "production": {
+          "browserTarget": "hr-portal:build:production"
+        },
+        "development": {
+          "browserTarget": "hr-portal:build:development"
+        }
+      },
+      "defaultConfiguration": "development",
+      "options": {
+        "port": 5003,
+        "proxyConfig": "apps/hr-portal/proxy.conf.json"
+      }
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "browserTarget": "hr-portal:build"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": [
+          "apps/hr-portal/src/**/*.ts",
+          "apps/hr-portal/src/**/*.html"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/apps/hr-portal"],
+      "options": {
+        "jestConfig": "apps/hr-portal/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

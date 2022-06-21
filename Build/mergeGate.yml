@@ -1,0 +1,31 @@
+trigger:
+- none
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  BuildConfiguration: 'Release'
+
+steps:
+- task: Npm@1
+  inputs:
+    command: 'install'
+    workingDir: 'front-end'
+    customRegistry: 'useFeed'
+    customFeed: 'beb15e70-d29e-4c30-b27e-a9143ce713b3/1e1edde3-70b8-4fce-8898-e910962e73e6'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: publish
+    arguments: '--configuration $(BuildConfiguration)'
+    projects: '**/*.csproj'
+    modifyOutputPath: true
+
+
+- task: DotNetCoreCLI@2
+  displayName: Test
+  inputs:
+    command: test
+    projects: '$(TestProjects)'
+    arguments: '--configuration $(BuildConfiguration)'

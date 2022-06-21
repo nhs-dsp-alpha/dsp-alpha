@@ -1,0 +1,21 @@
+<div class="nhsuk-form-group">
+  <fieldset class="nhsuk-fieldset" [attr.aria-describedby]="params?.hint?.id" [formGroup]="parentGroup">
+    <legend class="nhsuk-fieldset__legend nhsuk-fieldset__legend{{ params?.fieldsetLegendClasses }}">
+      {{params?.fieldsetLegendText}}
+    </legend>
+    <nhs-hint-text *ngIf="params?.hint" [params]="params?.hint"></nhs-hint-text>
+    <nhs-error-message *ngIf="params?.errorMessage" [params]="params?.errorMessage"></nhs-error-message>
+    <div class="nhsuk-date-input {{params?.classes}}" id="params?.id">
+      <div class="nhsuk-date-input__item" *ngFor="let item of params?.items">
+        <div class="nhsuk-form-group">
+          <label class="nhsuk-label nhsuk-date-input__label" for="item.name">
+            {{item.label}}
+          </label>
+          <input class="nhsuk-input nhsuk-date-input__input nhsuk-input--width-2" id="item.id" name="item?.name"
+            formControlName="{{item?.name}}" type="text" pattern="[0-9]*$" [attr.maxlength]="item.maxLength"
+            [value]="item.value" inputmode="numeric">
+        </div>
+      </div>
+    </div>
+  </fieldset>
+</div>

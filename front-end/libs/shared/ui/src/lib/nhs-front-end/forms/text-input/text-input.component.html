@@ -1,0 +1,10 @@
+<div class="nhsuk-form-group" [formGroup]="parentGroup">
+    <label class="nhsuk-label" for="{{params?.id}}">
+        {{params?.label}}
+    </label>
+    <nhs-hint-text *ngIf="params?.hint" [params]="params?.hint"></nhs-hint-text>
+    <nhs-error-message *ngIf="params?.errorMessage" [params]="params?.errorMessage"></nhs-error-message>
+    <span> {{params?.prefix?.text}}</span>
+    <input class="nhsuk-input {{params?.classes}}" id="{{params?.id}}" name="{{params?.name}}" formControlName="{{params?.name}}" 
+    type="{{params?.type}}" [attr.maxlength]="params?.maxLength" [value]="params?.value"><span> {{params?.suffix?.text}}</span>
+</div>

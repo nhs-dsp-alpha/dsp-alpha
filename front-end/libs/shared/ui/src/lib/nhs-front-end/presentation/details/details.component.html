@@ -1,0 +1,10 @@
+<details class="nhsuk-details {{params?.classes}}" [ngClass]="{'nhsuk-expander': isExpander }">
+<!-- {%- for attribute, value in params.attributes %} {{attribute}}="{{value}}"{% endfor %}> -->
+  <summary class="nhsuk-details__summary">
+    <span class="nhsuk-details__summary-text">
+      {{ params?.text }}
+    </span>
+  </summary>
+  <div class="nhsuk-details__text" [innerHTML]="params?.safeHtml">
+  </div>
+</details>

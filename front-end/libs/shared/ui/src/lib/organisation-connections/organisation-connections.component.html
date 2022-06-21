@@ -1,0 +1,24 @@
+<ng-container *ngIf="isAuthenticated">
+    <ng-container *ngIf="(connections$ | async)?.length; then hasConnections; else noConnections"></ng-container>
+    <a class="nhsuk-button nhsuk-u-margin-top-4" routerLink="addorganisation" draggable="false">
+        Add an organisation
+    </a>
+</ng-container>         
+
+    <ng-template #hasConnections>
+        <h2 class="nhsuk-heading-l">
+            Your Organisations
+        </h2>
+        <div class="nhuk-body">
+            <div  *ngIf="completedConnectionsCount$ | async as completedConnections">You have {{completedConnections}} connections.</div>
+            <div  *ngIf="pendingConnectionsCount$ | async as pendingConnections">You have {{pendingConnections}} pending connection{{pendingConnections > 1 ? 's' : ''}}.</div>
+        </div>
+    </ng-template>
+    
+    <ng-template #noConnections>
+        <h2 class="nhsuk-heading-l">Add an NHS organisation</h2>
+        <p class="nhuk-body">
+            Add an organisation to start using your digital staff passport. Your organisation will confirm your
+            identity then issue employment and training information.
+        </p>
+    </ng-template>

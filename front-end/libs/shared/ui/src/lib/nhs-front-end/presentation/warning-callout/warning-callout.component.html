@@ -1,0 +1,15 @@
+<div class="nhsuk-warning-callout {{ params?.classes }}">
+<!-- {%- for attribute, value in params.attributes %} {{attribute}}="{{value}}"{% endfor %}> -->
+  <div class="h{{ headingLevel }} nhsuk-warning-callout__label">
+      <ng-container *ngIf="containsImportant; else addImportant">
+        {{ params?.heading }}<span class="nhsuk-u-visually-hidden">:</span>      
+      </ng-container>
+      <ng-template #addImportant>
+        <span role="text">
+            <span class="nhsuk-u-visually-hidden">Important: </span>
+            {{ params?.heading }}
+          </span>
+        </ng-template>
+  </div>
+  <span [outerHTML]="params?.safeHtml"></span>
+</div>

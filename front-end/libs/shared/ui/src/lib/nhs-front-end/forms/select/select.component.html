@@ -1,0 +1,12 @@
+<div class="nhsuk-form-group">
+    <label class="nhsuk-label" for="{{params?.name}}">
+      {{params?.labelText}}
+    </label>
+    <nhs-hint-text *ngIf="params?.hint" [params]="params?.hint"></nhs-hint-text>
+    <nhs-error-message *ngIf="params?.errorMessage" [params]="params?.errorMessage"></nhs-error-message>
+    <select class="nhsuk-select {{params?.classes}}" id="{{params?.id}}" name="{{params?.name}}"
+        formControlName="{{params?.name}}">
+      <option *ngFor="let item of params?.items" [disabled]="item.disabled"
+      [value]="item.value" [selected]="item.selected">{{item.text}}</option> 
+    </select>
+  </div>

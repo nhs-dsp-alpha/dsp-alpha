@@ -1,0 +1,90 @@
+<h1 class="nhsuk-u-margin-top-4">
+    Check your details and add an NHS organisation
+</h1>
+
+<dl class="nhsuk-summary-list">
+
+    <div class="nhsuk-summary-list__row">
+        <dt class="nhsuk-summary-list__key">
+            Photo
+        </dt>
+        <dd class="nhsuk-summary-list__value">
+            <img *ngIf="photoString!=='skip'" [src]="photoString" alt="Profile photo" style="width:200px;" />
+            <p *ngIf="photoString==='skip'">Skipped</p>
+        </dd>
+        <dd class="nhsuk-summary-list__actions">
+            <a href="#" (click)="onchangePhoto()">
+                Change<span class="nhsuk-u-visually-hidden"> photo</span>
+            </a>
+        </dd>
+    </div>
+
+    <div class="nhsuk-summary-list__row">
+        <dt class="nhsuk-summary-list__key">
+            Which organisation are you currently employed by?
+        </dt>
+        <dd class="nhsuk-summary-list__value">
+            {{selectedOrganisation?.name}}
+        </dd>
+
+        <dd class="nhsuk-summary-list__actions">
+
+            <a href="#" (click)="onchangeOrganisation()">
+                Change<span class="nhsuk-u-visually-hidden"> organisation</span>
+            </a>
+
+        </dd>
+
+    </div>
+
+    <div class="nhsuk-summary-list__row">
+        <dt class="nhsuk-summary-list__key">
+            What is your employee number? (optional)
+        </dt>
+        <dd class="nhsuk-summary-list__value">
+            {{employeeId}}
+        </dd>
+
+        <dd class="nhsuk-summary-list__actions">
+
+            <a href="#" (click)="onChangeEmployeeId()">
+                Change<span class="nhsuk-u-visually-hidden"> employee number</span>
+            </a>
+
+        </dd>
+
+    </div>
+
+    <div class="nhsuk-summary-list__row">
+        <dt class="nhsuk-summary-list__key">
+            What is your date of birth?
+        </dt>
+        <dd class="nhsuk-summary-list__value">
+            {{dob | date:'d MMM y'}}
+        </dd>
+
+        <dd class="nhsuk-summary-list__actions">
+
+            <a href="#" (click)="onChangeDob()">
+                Change<span class="nhsuk-u-visually-hidden"> date of birth</span>
+            </a>
+
+        </dd>
+
+    </div>
+
+</dl>
+
+
+
+<!--<p>
+      By submitting this notification you are confirming that, to the best of your knowledge, the details you are providing are correct.
+    </p>
+
+    <p>
+      Your details with be sent to Rose Medical Practice to begin your registration.
+    </p>-->
+
+<button class="nhsuk-button nhsuk-u-margin-top-4" [disabled]="busy" (click)="done()" draggable="false">
+    Add an organisation
+</button>

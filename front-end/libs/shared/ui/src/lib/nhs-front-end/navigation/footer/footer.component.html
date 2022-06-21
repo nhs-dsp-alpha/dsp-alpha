@@ -1,0 +1,15 @@
+<footer role="contentinfo">
+    <div class="nhsuk-footer {{params?.classes}}" id="nhsuk-footer">
+      <!-- {%- for attribute, value in params?.attributes %} {{ attribute }}="{{ value }}"{% endfor %}> -->
+      <div class="nhsuk-width-container">
+        <ng-container *ngIf="params?.links">
+            <h2 class="nhsuk-u-visually-hidden">Support links</h2>
+            <ul class="nhsuk-footer__list">
+              <li *ngFor="let item of params?.links" class="nhsuk-footer__list-item"><a class="nhsuk-footer__list-item-link" href="{{ item.URL }}">{{ item.label }}</a></li>
+            </ul>
+        </ng-container>
+        <p class="nhsuk-footer__copyright">{{ params?.copyright || '&copy; Crown copyright'}}</p>
+      </div>
+    </div>
+  </footer>
+  

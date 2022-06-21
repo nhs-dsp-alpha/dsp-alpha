@@ -1,0 +1,12 @@
+<nhs-header [showAuthentication]="true" [isAuthenticated]="isAuthenticated" (loginClicked)="onLoginClicked()"
+    (logoutClicked)="onLogoutClicked()" [params]="headerParams"></nhs-header>
+
+<a class="nhsuk-skip-link" href="#maincontent">Skip to main content</a>
+<div class="nhsuk-width-container">
+    <main class="nhsuk-main-wrapper" id="maincontent" role="main">
+        <router-outlet (activate)="childSelectedOrganisation($event)" (activate)="desktopLandingPage($event)">
+        </router-outlet>
+    </main>
+</div>
+
+<nhs-footer [params]="footerParams"></nhs-footer>

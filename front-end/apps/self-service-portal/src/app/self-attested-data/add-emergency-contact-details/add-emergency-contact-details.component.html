@@ -1,0 +1,51 @@
+<nhs-back-link [params]="backlink"></nhs-back-link>
+<h1>Add your emergency contacts details
+    <span class="nhsuk-caption-l">Please add the details of your emergency contact</span>
+    <span class="nhsuk-hint" id="captionHint">
+        All fields are optional
+    </span>
+</h1>
+<form [formGroup]="emergencyContactDetails" (ngSubmit)="onEmergencyContactDetailsSubmit()">
+    <div class="nhsuk-form-group">
+        <label class="nhsuk-heading-xs nhsuk-u-margin-bottom-2" id="EmergContactTitleLabel"
+            for="EmergContactTitle">Title</label>
+        <input type="text" formControlName="EmergContactTitle" name="EmergContactTitle"
+            class="nhsuk-input--width-4 nhsuk-input" aria-describedby="EmergContactTitleLabel">
+    </div>
+    <div class="nhsuk-form-group">
+        <label class="nhsuk-heading-xs nhsuk-u-margin-bottom-2" id="EmergContactFirstNameLabel"
+            for="EmergContactFirstName">First Name</label>
+        <input type="text" formControlName="EmergContactFirstName" name="EmergContactFirstName" class="nhsuk-input"
+            aria-describedby="EmergContactFirstNameLabel">
+    </div>
+    <div class="nhsuk-form-group">
+        <label class="nhsuk-heading-xs nhsuk-u-margin-bottom-2" id="EmergContactLastNameLabel"
+            for="EmergContactLastName">Last Name</label>
+        <input type="text" formControlName="EmergContactLastName" name="EmergContactLastName" class="nhsuk-input"
+            aria-describedby="EmergContactLastNameLabel">
+    </div>
+    <div class="nhsuk-form-group">
+        <label class="nhsuk-heading-xs nhsuk-u-margin-bottom-2" id="EmergContactPreferredTelephoneNumberLabel"
+            for="EmergContactPreferredTelephoneNumber">Telephone Number</label>
+        <input type="text" formControlName="EmergContactPreferredTelephoneNumber"
+            name="EmergContactPreferredTelephoneNumber" class="nhsuk-input"
+            aria-describedby="EmergContactPreferredTelephoneNumberLabel">
+    </div>
+    <div class="nhsuk-form-group">
+        <label class="nhsuk-heading-xs nhsuk-u-margin-bottom-2" id="EmergContactSecondaryTelephoneNumberLabel"
+            for="EmergContactSecondaryTelephoneNumber">Alternative Telephone Number</label>
+        <input type="text" formControlName="EmergContactSecondaryTelephoneNumber"
+            name="EmergContactSecondaryTelephoneNumber" class="nhsuk-input"
+            aria-describedby="EmergContactSecondaryTelephoneNumberLabel">
+    </div>
+    <div class="nhsuk-form-group">
+        <label class="nhsuk-heading-xs nhsuk-u-margin-bottom-2" id="EmergContactRelationshipLabel"
+            for="EmergContactRelationship">Relationship</label>
+        <input type="text" formControlName="EmergContactRelationship" name="EmergContactRelationship"
+            class="nhsuk-input" aria-describedby="EmergContactRelationshipLabel">
+    </div>
+    <button class="nhsuk-button nhsuk-u-margin-top-4" type="submit" draggable="false"
+        [disabled]="emergencyContactDetails.pristine">
+        Save
+    </button>
+</form>

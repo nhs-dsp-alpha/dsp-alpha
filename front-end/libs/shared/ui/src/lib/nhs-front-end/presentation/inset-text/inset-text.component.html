@@ -1,0 +1,5 @@
+<div class="nhsuk-inset-text {{params?.classes}}">
+<!-- {%- for attribute, value in params.attributes %} {{attribute}}="{{value}}"{% endfor %}> -->
+  <span class="nhsuk-u-visually-hidden">Information: </span>
+  <span [outerHTML]="params?.safeHtml"></span>
+</div>

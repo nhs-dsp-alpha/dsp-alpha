@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Azure.Identity" Version="1.6.0" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.12.0" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Graph.Core" Version="2.0.8" />
+		<PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="1.24.1" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.19.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<AdditionalFiles Include="$(SolutionDir)\_stylecop\stylecop.json" Link="stylecop.json" />
+		<Compile Include="$(SolutionDir)\_stylecop\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+	</ItemGroup>
+
+</Project>

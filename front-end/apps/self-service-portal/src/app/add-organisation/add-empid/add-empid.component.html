@@ -1,0 +1,17 @@
+<nhs-back-link [params]="backlink" (clicked)="goBack()"></nhs-back-link>
+
+<h1 class="nhsuk-heading-l">
+    <span class="nhsuk-caption-l">Add an NHS organisation</span>
+    What is your employee number? (optional)
+</h1>
+
+<div class="nhsuk-form-group">
+    <label class="nhsuk-label" for="employee_no">
+        Employee number
+    </label>
+    <input [(ngModel)]="employeeId" class="nhsuk-input nhsuk-input--width-10" id="employee_no" name="employee_no" type="text">
+</div>
+
+<a class="nhsuk-button nhsuk-u-margin-top-4" (click)="done()" draggable="false">
+    Continue
+</a>

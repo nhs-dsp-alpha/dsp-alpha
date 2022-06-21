@@ -1,0 +1,14 @@
+<nav class="nhsuk-breadcrumb {{ params?.classes }}" aria-label="Breadcrumb">
+<!-- {%- for attribute, value in params?.attributes %} {{attribute}}="{{value}}"{% endfor %}> -->
+  <div class="nhsuk-width-container">
+    <ol class="nhsuk-breadcrumb__list">
+        <ng-container *ngFor="let item of params?.items">
+            <!-- {% for attribute, value in item.attributes %} {{attribute}}="{{value}}"{% endfor %} -->
+            <li *ngIf="item.href" class="nhsuk-breadcrumb__item"><a class="nhsuk-breadcrumb__link" href="{{ item.href }}">{{ item.text }}</a></li>
+        </ng-container>
+        <!-- {% for attribute, value in item.attributes %} {{attribute}}="{{value}}"{% endfor %} -->
+        <li class="nhsuk-breadcrumb__item"><a class="nhsuk-breadcrumb__link" href="{{ params?.href }}">{{ params?.text}}</a></li>
+    </ol>
+    <p class="nhsuk-breadcrumb__back"><a class="nhsuk-breadcrumb__backlink" href="{{ params?.href }}">Back to {{ params?.text }}</a></p>
+  </div>
+</nav>

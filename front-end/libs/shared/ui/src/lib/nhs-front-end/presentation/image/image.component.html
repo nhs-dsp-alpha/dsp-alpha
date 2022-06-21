@@ -1,0 +1,8 @@
+<figure class="nhsuk-image {{params?.classes}}">
+<!-- {%- for attribute, value in params.attributes %} {{attribute}}="{{value}}"{% endfor %}> -->
+  <img class="nhsuk-image__img" src="{{ params?.src }}" alt="{{ params?.alt }}" 
+    sizes="{{ params?.sizes }}" srcset="{{ params?.srcset }}">
+  <figcaption *ngIf="params?.caption" class="nhsuk-image__caption">
+    {{ params?.caption }}
+  </figcaption>
+</figure>

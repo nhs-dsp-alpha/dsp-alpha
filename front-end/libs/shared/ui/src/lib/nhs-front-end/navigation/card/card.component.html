@@ -1,0 +1,17 @@
+<!-- {%- for attribute, value in params?.attributes %} {{attribute}}="{{value}}"{% endfor %} -->
+<div (click)="params?.clickable ? onClick() : undefined" class="nhsuk-card {{params?.classes}}" [ngClass]="{ 'nhsuk-card--clickable': params?.clickable, 'nhsuk-card--feature': params?.feature }">
+  <img *ngIf="params?.imgURL" class="nhsuk-card__img" src="{{ params?.imgURL }}" alt="{{ params?.imgALT }}">
+  <div class="nhsuk-card__content" [ngClass]="{ 'nhsuk-card__content--feature': params?.feature }">
+    <ng-container *ngIf="params?.headingHtml; else heading"><span [outerHTML]="params?.headingSafeHtml"></span></ng-container>
+    <ng-template #heading>
+        <div class="h{{ headingLevel }} nhsuk-card__heading {{params?.headingClasses}}" [ngClass]="{ 'nhsuk-card__heading--feature': params?.feature }">
+        <a *ngIf="(params?.href || params?.routerLink) && !params?.feature; else basicheading" class="nhsuk-card__link" routerLink="{{ params?.routerLink }}" href="{{ params?.href }}">{{ params?.heading }}</a>
+        <ng-template #basicheading>{{ params?.heading }}</ng-template>
+        </div>
+    </ng-template>
+    <ng-container *ngIf="params?.descriptionHtml; else description"><div innerHtml="{{ params?.descriptionHtml }}"></div></ng-container>
+    <ng-template #description>
+        <p *ngIf="params?.description" class="nhsuk-card__description">{{ params?.description }}</p>
+    </ng-template>
+  </div>
+</div>

@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "projects": {
+    "admin-portal": "apps/admin-portal",
+    "admin-portal-e2e": "apps/admin-portal-e2e",
+    "front-end": "apps/front-end",
+    "front-end-e2e": "apps/front-end-e2e",
+    "hr-portal": "apps/hr-portal",
+    "hr-portal-e2e": "apps/hr-portal-e2e",
+    "kiosk": "apps/kiosk",
+    "kiosk-e2e": "apps/kiosk-e2e",
+    "self-service-portal": "apps/self-service-portal",
+    "self-service-portal-e2e": "apps/self-service-portal-e2e",
+    "shared-authentication": "libs/shared/authentication",
+    "shared-credentials": "libs/shared/credentials",
+    "shared-services": "libs/shared/services",
+    "shared-ui": "libs/shared/ui"
+  }
+}

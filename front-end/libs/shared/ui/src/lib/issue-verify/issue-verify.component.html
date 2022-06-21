@@ -1,0 +1,9 @@
+<hr />
+<div *ngIf="isAuthenticated" class="container">
+    <h3>Credential Gateway</h3>
+    <button class="nhsuk-button nhsuk-button--secondary" (click)="showIssue()">Issue</button>
+    &nbsp;&nbsp;&nbsp;
+    <button class="nhsuk-button nhsuk-button--secondary" (click)="showVerify()">Verify</button>
+    <br />
+    <p>{{result}}</p>
+</div>

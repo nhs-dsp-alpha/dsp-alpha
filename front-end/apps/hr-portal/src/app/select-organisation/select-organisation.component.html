@@ -1,0 +1,28 @@
+<nhs-back-link [params]="backlink" (clicked)="goBack()"></nhs-back-link>
+
+<h1 class="nhsuk-heading-l">
+    Choose an NHS organisation
+    <span class="nhsuk-caption-l">Which organisation’s staff digital passports would you like to view?</span>
+</h1>
+
+<fieldset class="nhsuk-fieldset">
+    <div class="nhsuk-form-group">
+
+        <div class="nhsuk-radios">
+
+            <div *ngFor="let organisation of organisations$ | async; index as i" class="nhsuk-radios__item">
+                <input class="nhsuk-radios__input" id="{{organisation.id}}" name="organisation" type="radio"
+                    value="{{organisation.id}}" [(ngModel)]="organisationId">
+                <label class="nhsuk-label nhsuk-radios__label" for="org-1">
+                    {{organisation.name}}
+                </label>
+            </div>
+
+        </div>
+    </div>
+
+</fieldset>
+
+<button class="nhsuk-button nhsuk-u-margin-top-4" [disabled]="!selected" (click)="done()" draggable="false">
+    Continue
+</button>
